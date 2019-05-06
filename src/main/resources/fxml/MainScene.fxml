@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" pickOnBounds="false" prefHeight="600.0" prefWidth="900.0" stylesheets="@../styles/mainstyle.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainsceneController">
+   <children>
+      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="903.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="900.0">
+               <children>
+                  <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="155.0" styleClass="sidebar">
+                     <children>
+                        <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="233.0" prefWidth="155.0">
+                           <children>
+                              <Button fx:id="ChooseProviderBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showChooseProviders" prefHeight="46.0" prefWidth="155.0" text="Выбрать поставщика" />
+                              <Button fx:id="OrganisationBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showOrganisation" prefHeight="46.0" prefWidth="155.0" text="Моя организация" />
+                              <Button fx:id="ProvidersBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showProviders" prefHeight="46.0" prefWidth="155.0" text="Поставщики" />
+                              <Button fx:id="ProductsBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showProducts" prefHeight="46.0" prefWidth="155.0" text="Продукты поставки" />
+                              <Button fx:id="SavedSamplesBtn" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showSavedSamples" prefHeight="46.0" prefWidth="155.0" text="Сохр. выборки" />
+                           </children>
+                        </VBox>
+                        <Button fx:id="PropertiesBtn" alignment="CENTER" contentDisplay="CENTER" layoutY="485.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showProperties" prefHeight="46.0" prefWidth="155.0" text="Настройки" AnchorPane.bottomAnchor="46.0" />
+                        <Button fx:id="ConnectionBtn" alignment="CENTER" contentDisplay="CENTER" layoutY="532.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#showConnection" prefHeight="46.0" prefWidth="155.0" text="Соединение с БД" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="745.0" styleClass="contentpane">
+                     <children>
+                        <AnchorPane fx:id="ProvidersPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#ProvidersClearSelection" prefHeight="579.0" prefWidth="745.0" styleClass="contentpane" visible="false">
+                           <children>
+                              <Label layoutX="310.0" layoutY="14.0" prefHeight="25.0" prefWidth="120.0" styleClass="settingslabel" text="Поставщики">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TableView fx:id="ProvidersTable" layoutX="15.0" layoutY="47.0" onMouseClicked="#ProvidersSelectFromTable" prefHeight="485.0" prefWidth="709.0">
+                                 <columns>
+                                    <TableColumn fx:id="ProvidersNameColumn" prefWidth="166.0" text="Название" />
+                                    <TableColumn fx:id="ProvidersINNColumn" prefWidth="117.0" text="ИНН" />
+                                    <TableColumn fx:id="ProvidersOGRNColumn" prefWidth="113.0" text="ОГРН" />
+                                    <TableColumn fx:id="ProvidersKPPColumn" prefWidth="93.0" text="КПП" />
+                                    <TableColumn fx:id="ProvidersOKPOColumn" prefWidth="128.0" text="ОКПО" />
+                                    <TableColumn fx:id="ProvidersOKTMOColumn" prefWidth="74.0" text="ОКТМО" />
+                                 </columns>
+                              </TableView>
+                              <Button fx:id="ProvidersAddBtn" layoutX="39.0" layoutY="540.0" mnemonicParsing="false" onAction="#ProvidersAdd" styleClass="controlbutton" text="Добавить" />
+                              <Button fx:id="ProvidersEditBtn" disable="true" layoutX="313.0" layoutY="540.0" mnemonicParsing="false" onAction="#ProvidersEdit" styleClass="controlbutton" text="Редактировать" />
+                              <Button fx:id="ProvidersDeleteBtn" disable="true" layoutX="628.0" layoutY="540.0" mnemonicParsing="false" onAction="#ProvidersDelete" styleClass="controlbutton" text="Удалить" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="EditProviderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="739.0" visible="false">
+                           <children>
+                              <ScrollPane layoutX="36.0" layoutY="32.0" prefHeight="200.0" prefWidth="739.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" onMouseClicked="#EditProviderClearSelection" prefHeight="1234.0" prefWidth="717.0">
+                                       <children>
+                                          <Button layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#EditProviderGetBack" prefHeight="24.0" prefWidth="94.0" styleClass="controlbutton" text="Назад" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
+                                          <Label fx:id="EditProviderLabel" layoutX="245.0" layoutY="14.0" prefHeight="25.0" prefWidth="264.0" styleClass="settingslabel" text="Редактирование поставщика">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <Label layoutX="236.0" layoutY="61.0" text="Наименование: " />
+                                          <Label layoutX="236.0" layoutY="86.0" text="ИНН:" />
+                                          <Label layoutX="236.0" layoutY="111.0" text="ОГРН:" />
+                                          <Label layoutX="236.0" layoutY="136.0" text="КПП:" />
+                                          <Label layoutX="236.0" layoutY="162.0" text="ОКПО:" />
+                                          <Label layoutX="236.0" layoutY="189.0" text="ОКТМО:" />
+                                          <TableView fx:id="EditProviderAddressTable" layoutX="14.0" layoutY="210.0" onMouseClicked="#EditProviderSelectAddress" prefHeight="252.0" prefWidth="704.0">
+                                             <columns>
+                                                <TableColumn fx:id="EditProviderIndexColumn" prefWidth="65.0" text="Индекс" />
+                                                <TableColumn fx:id="EditProviderRegionColumn" prefWidth="146.0" text="Регион" />
+                                                <TableColumn fx:id="EditProviderCityColumn" prefWidth="137.0" text="Город" />
+                                                <TableColumn fx:id="EditProviderCommentColumn" prefWidth="336.0" text="Комментарий" />
+                                             </columns>
+                                          </TableView>
+                                          <TableView fx:id="EditProviderCriteriaTable" layoutX="14.0" layoutY="906.0" onMouseClicked="#EditProviderSelectCriteria" prefHeight="200.0" prefWidth="704.0">
+                                             <columns>
+                                                <TableColumn fx:id="EditProviderCriteriaNameColumn" prefWidth="347.0" text="Критерий" />
+                                                <TableColumn fx:id="EditProviderCriteriaValueColumn" prefWidth="356.0" text="Значение" />
+                                             </columns>
+                                          </TableView>
+                                          <TextField fx:id="EditProviderNameEdit" layoutX="341.0" layoutY="57.0" />
+                                          <TextField fx:id="EditProviderINNEdit" layoutX="341.0" layoutY="82.0" />
+                                          <TextField fx:id="EditProviderOGRNEdit" layoutX="341.0" layoutY="107.0" />
+                                          <TextField fx:id="EditProviderKPPEdit" layoutX="341.0" layoutY="132.0" />
+                                          <TextField fx:id="EditProviderOKPOEdit" layoutX="341.0" layoutY="157.0" />
+                                          <TextField fx:id="EditProviderOKTMOEdit" layoutX="341.0" layoutY="182.0" />
+                                          <TextField fx:id="EditProviderIndexEdit" layoutX="15.0" layoutY="479.0" prefHeight="25.0" prefWidth="60.0" />
+                                          <Label layoutX="24.0" layoutY="462.0" text="Индекс" />
+                                          <TextField fx:id="EditProviderRegionEdit" layoutX="78.0" layoutY="479.0" prefHeight="25.0" prefWidth="299.0" />
+                                          <Label layoutX="206.0" layoutY="462.0" text="Регион" />
+                                          <TextField fx:id="EditProviderCityEdit" layoutX="384.0" layoutY="478.0" prefHeight="25.0" prefWidth="179.0" />
+                                          <Label layoutX="455.0" layoutY="462.0" text="Город" />
+                                          <TextField fx:id="EditProviderCommentEdit" layoutX="15.0" layoutY="521.0" prefHeight="25.0" prefWidth="545.0" />
+                                          <Label layoutX="249.0" layoutY="504.0" text="Комментарий" />
+                                          <Button fx:id="EditProviderDeleteAddressBtn" disable="true" layoutX="578.0" layoutY="518.0" mnemonicParsing="false" onAction="#EditProviderDeleteAddress" prefHeight="27.0" prefWidth="127.0" styleClass="controlbutton" text="Удалить" />
+                                          <Button fx:id="EditProviderAddAddressBtn" layoutX="578.0" layoutY="477.0" mnemonicParsing="false" onAction="#EditProviderAddAddress" prefHeight="27.0" prefWidth="70.0" styleClass="controlbutton" text="Добав." />
+                                          <Button fx:id="EditProviderSaveAddressBtn" disable="true" layoutX="647.0" layoutY="477.0" mnemonicParsing="false" onAction="#EditProviderSaveAddress" prefHeight="27.0" prefWidth="58.0" styleClass="controlbutton" text="Сохр." />
+                                          <TableView fx:id="EditProviderProductTable" layoutX="15.0" layoutY="557.0" onMouseClicked="#EditProviderSelectProduct" prefHeight="281.0" prefWidth="702.0">
+                                             <columns>
+                                                <TableColumn fx:id="EditProviderProductNameColumn" prefWidth="331.0" text="Продукт" />
+                                                <TableColumn fx:id="EditProviderProductProvidesColumn" prefWidth="370.0" text="Поставщик поставляет" />
+                                             </columns>
+                                          </TableView>
+                                          <Label layoutX="138.0" layoutY="847.0" text="Продукт" />
+                                          <TextField fx:id="EditProviderProductNameEdit" editable="false" layoutX="43.0" layoutY="864.0" prefHeight="22.0" prefWidth="222.0" />
+                                          <ComboBox fx:id="EditProviderProductIsProvideEdit" layoutX="348.0" layoutY="864.0" prefWidth="150.0" />
+                                          <Label layoutX="388.0" layoutY="847.0" text="Поставляет" />
+                                          <Button fx:id="EditProviderSaveProductsBtn" disable="true" layoutX="578.0" layoutY="862.0" mnemonicParsing="false" onAction="#EditProviderSaveProducts" prefHeight="27.0" prefWidth="113.0" styleClass="controlbutton" text="Сохранить" />
+                                          <Label layoutX="124.0" layoutY="1114.0" text="Критерий" />
+                                          <Label layoutX="492.0" layoutY="1114.0" text="Значение" />
+                                          <Button fx:id="EditProviderSaveCriteriaBtn" disable="true" layoutX="578.0" layoutY="1129.0" mnemonicParsing="false" onAction="#EditProviderSaveCriteria" prefHeight="27.0" prefWidth="113.0" styleClass="controlbutton" text="Сохранить" />
+                                          <ComboBox fx:id="EditProviderCriteriaValueEdit" layoutX="477.0" layoutY="1131.0" prefHeight="23.0" prefWidth="90.0" />
+                                          <TextField fx:id="EditProviderCriteriaNameEdit" editable="false" layoutX="24.0" layoutY="1132.0" prefHeight="22.0" prefWidth="446.0" />
+                                          <Button layoutX="274.0" layoutY="1184.0" mnemonicParsing="false" onAction="#EditProviderSaveProvider" prefHeight="42.0" prefWidth="170.0" styleClass="controlbutton" text="Добавить поставщика" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="DeleteProviderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="745.0" visible="false">
+                           <children>
+                              <ScrollPane layoutX="36.0" layoutY="32.0" minHeight="-Infinity" minWidth="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="763.0" prefWidth="723.0">
+                                       <children>
+                                          <Button layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#DeleteProviderGetBack" prefHeight="24.0" prefWidth="94.0" styleClass="controlbutton" text="Назад" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
+                                          <Label layoutX="262.0" layoutY="14.0" prefHeight="25.0" prefWidth="165.0" styleClass="settingslabel" text=" Удалить поставщика?">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <Label layoutX="236.0" layoutY="61.0" text="Наименование: " AnchorPane.leftAnchor="236.0" />
+                                          <Label fx:id="DeleteProviderNameEdit" layoutX="341.0" layoutY="61.0" prefHeight="17.0" prefWidth="211.0" text="&quot;ООО Рога и Копыта&quot;" AnchorPane.leftAnchor="341.0" />
+                                          <Label layoutX="108.0" layoutY="86.0" text="ИНН:" AnchorPane.leftAnchor="236.0" />
+                                          <Label fx:id="DeleteProviderINNEdit" layoutX="220.0" layoutY="86.0" prefHeight="17.0" prefWidth="121.0" text="111111111111" AnchorPane.leftAnchor="341.0" />
+                                          <Label layoutX="109.0" layoutY="111.0" text="ОГРН:" AnchorPane.leftAnchor="236.0" />
+                                          <Label fx:id="DeleteProviderOGRNEdit" layoutX="220.0" layoutY="111.0" prefHeight="17.0" prefWidth="121.0" text="111111111111" AnchorPane.leftAnchor="341.0" />
+                                          <Label layoutX="108.0" layoutY="136.0" text="КПП:" AnchorPane.leftAnchor="236.0" />
+                                          <Label fx:id="DeleteProviderKPPEdit" layoutX="220.0" layoutY="136.0" prefHeight="17.0" prefWidth="121.0" text="111111111111" AnchorPane.leftAnchor="341.0" />
+                                          <Label layoutX="107.0" layoutY="162.0" text="ОКПО:" AnchorPane.leftAnchor="236.0" />
+                                          <Label layoutX="103.0" layoutY="189.0" text="ОКТМО:" AnchorPane.leftAnchor="236.0" />
+                                          <Label fx:id="DeleteProviderOKPOEdit" layoutX="220.0" layoutY="162.0" prefHeight="17.0" prefWidth="121.0" text="111111111111" AnchorPane.leftAnchor="341.0" />
+                                          <Label fx:id="DeleteProviderOKTMOEdit" layoutX="220.0" layoutY="189.0" prefHeight="17.0" prefWidth="121.0" text="111111111111" AnchorPane.leftAnchor="341.0" />
+                                          <TableView fx:id="DeleteProviderAddressTable" layoutX="14.0" layoutY="242.0" prefHeight="249.0" prefWidth="704.0">
+                                             <columns>
+                                                <TableColumn fx:id="DeleteProviderIndexColumn" prefWidth="65.0" text="Индекс" />
+                                                <TableColumn fx:id="DeleteProviderRegionColumn" prefWidth="146.0" text="Регион" />
+                                                <TableColumn fx:id="DeleteProviderCityColumn" prefWidth="137.0" text="Город" />
+                                                <TableColumn fx:id="DeleteProviderCommentColumn" prefWidth="333.0" text="Комментарий" />
+                                             </columns>
+                                          </TableView>
+                                          <TableView fx:id="DeleteProviderCriteriaTable" layoutX="14.0" layoutY="498.0" prefHeight="200.0" prefWidth="704.0">
+                                             <columns>
+                                                <TableColumn fx:id="DeleteProviderCriteriaNameColumn" prefWidth="347.0" text="Критерий" />
+                                                <TableColumn fx:id="DeleteProviderCriteriaValueColumn" prefWidth="356.0" text="Значение" />
+                                             </columns>
+                                          </TableView>
+                                          <Label layoutX="236.0" layoutY="216.0" text="Поставляет:" />
+                                          <TextField fx:id="DeleteProviderProductsEdit" editable="false" layoutX="341.0" layoutY="212.0" prefHeight="25.0" prefWidth="334.0" text="Мясо молоко сыр коровы лосось копчонка запрещенка" />
+                                          <Button layoutX="277.0" layoutY="707.0" mnemonicParsing="false" onAction="#DeleteProviderFromProviders" prefHeight="42.0" prefWidth="170.0" styleClass="warnbutton" text="Удалить поставщика" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="ChoosePhase1Pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#Phase1ClearSelection" prefHeight="579.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <TableView fx:id="Phase1ProductTable" layoutX="37.0" layoutY="53.0" onMouseClicked="#Phase1SelectProduct" prefHeight="470.0" prefWidth="666.0" AnchorPane.leftAnchor="37.0" AnchorPane.rightAnchor="37.0">
+                                 <columns>
+                                    <TableColumn fx:id="Phase1ProductNameColumn" prefWidth="665.0" text="Продукты" />
+                                 </columns>
+                              </TableView>
+                              <Label layoutX="274.0" layoutY="21.0" prefHeight="25.0" prefWidth="191.0" styleClass="settingslabel" text="Выбор продукта">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <Button fx:id="Phase1GetForwardBtn" layoutX="313.0" layoutY="534.0" mnemonicParsing="false" onAction="#Phase1GetForward" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Далее" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="312.0" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="ChoosePhase2Pane" prefHeight="591.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <Label layoutX="228.0" layoutY="14.0" prefHeight="25.0" prefWidth="284.0" styleClass="settingslabel" text="Поставщики с выбранным продуктом">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TableView fx:id="Phase2ProviderTable" layoutX="16.0" layoutY="47.0" prefHeight="339.0" prefWidth="708.0">
+                                 <columns>
+                                    <TableColumn fx:id="Phase2ProviderNameColumn" prefWidth="597.0" text="Наименование" />
+                                    <TableColumn fx:id="Phase2ProviderRatingColumn" minWidth="0.0" prefWidth="86.0" text="Рейтинг" />
+                                 </columns>
+                              </TableView>
+                              <Label layoutX="228.0" layoutY="412.0" prefHeight="25.0" prefWidth="284.0" styleClass="settingslabel" text="Параметры поставки">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="Phase2MinProviderRatingEdit" alignment="CENTER" layoutX="482.0" layoutY="449.0" prefHeight="22.0" prefWidth="75.0" />
+                              <Label layoutX="103.0" layoutY="451.0" text="Выбирать из поставщиков с рейтингом не ниже :">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="Phase2MaxTimeEdit" alignment="CENTER" layoutX="482.0" layoutY="501.0" prefHeight="22.0" prefWidth="75.0" />
+                              <Label layoutX="34.0" layoutY="503.0" text="Максимально допустимое время транспорта в пути в днях :">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <Button layoutX="228.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase2GetBack" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Назад" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="228.0" />
+                              <Button layoutX="392.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase2GetForward" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Далее" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="233.0" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="PropertiesPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="745.0">
+                           <children>
+                              <ScrollPane hbarPolicy="NEVER" prefHeight="579.0" prefWidth="745.0" vvalue="1.0">
+                                 <content>
+                                    <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#PropertiesClearSelection" prefHeight="1241.0" prefWidth="724.0">
+                                       <children>
+                                          <Label alignment="CENTER" layoutX="307.0" layoutY="14.0" prefHeight="29.0" prefWidth="103.0" styleClass="settingslabel" text="Критерии">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TableView fx:id="PropertiesCriteriaTable" layoutX="15.0" layoutY="52.0" onMouseClicked="#PropertiesSelectCriteria" prefHeight="200.0" prefWidth="698.0">
+                                             <columns>
+                                                <TableColumn fx:id="PropertiesCriteriaNameColumn" prefWidth="529.3333740234375" text="Наименование" />
+                                                <TableColumn fx:id="PropertiesCriteriaImportanceColumn" prefWidth="147.6666259765625" text="Важность критерия" />
+                                             </columns>
+                                          </TableView>
+                                          <TextField fx:id="PropertiesCriteriaNameEdit" editable="false" layoutX="34.0" layoutY="271.0" prefHeight="22.0" prefWidth="246.0" />
+                                          <Label layoutX="114.0" layoutY="252.0" text="Наименование" />
+                                          <Label layoutX="422.0" layoutY="252.0" text="Важность критерия" />
+                                          <Label alignment="CENTER" layoutX="297.0" layoutY="309.0" prefHeight="29.0" prefWidth="123.0" styleClass="settingslabel" text="Корректировки">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TableView fx:id="PropertiesAdjustmentTable" layoutX="15.0" layoutY="350.0" onMouseClicked="#PropertiesSelectAdjustment" prefHeight="200.0" prefWidth="698.0">
+                                             <columns>
+                                                <TableColumn fx:id="PropertiesAdjustmentValueColumn" prefWidth="340.0" text="Балл опасности" />
+                                                <TableColumn fx:id="PropertiesAdjustmentSpeedColumn" prefWidth="337.0" text="Процент скорости от нормы" />
+                                             </columns>
+                                          </TableView>
+                                          <Button fx:id="PropertiesSaveAdjustmentBtn" disable="true" layoutX="610.0" layoutY="563.0" mnemonicParsing="false" onAction="#PropertiesSaveAdjustment" styleClass="controlbutton" text="Сохранить" />
+                                          <ComboBox fx:id="PropertiesAdjustmentSpeedEdit" layoutX="363.0" layoutY="563.0" prefWidth="150.0" />
+                                          <TextField fx:id="PropertiesAdjustmentDangerLevelEdit" editable="false" layoutX="139.0" layoutY="563.0" prefHeight="22.0" prefWidth="35.0" />
+                                          <Label layoutX="34.0" layoutY="566.0" text="Балл опасности:" />
+                                          <Label layoutX="216.0" layoutY="566.0" text="Процент скорости:" />
+                                          <TableView fx:id="PropertiesWeatherDangerTable" layoutX="15.0" layoutY="598.0" prefHeight="384.0" prefWidth="697.0">
+                                             <columns>
+                                                <TableColumn fx:id="PropertiesWeatherDangerNameColumn" prefWidth="556.3333129882812" text="Погодное условие" />
+                                                <TableColumn fx:id="PropertiesWeatherDangerLevelColumn" minWidth="0.0" prefWidth="114.66668701171875" text="Балл опасности" />
+                                             </columns>
+                                          </TableView>
+                                          <Button fx:id="PropertiesSaveCriteriaBtn" disable="true" layoutX="608.0" layoutY="272.0" mnemonicParsing="false" onAction="#PropertiesSaveCriteria" prefHeight="25.0" prefWidth="94.0" styleClass="controlbutton" text="Сохранить" />
+                                          <TextField fx:id="PropertiesCriteriaImportanceEdit" layoutX="400.0" layoutY="274.0" />
+                                          <Button layoutX="274.0" layoutY="1192.0" mnemonicParsing="false" onAction="#PropertiesSavePreferences" prefHeight="42.0" prefWidth="170.0" styleClass="controlbutton" text="Сохранить настройки" />
+                                          <Label alignment="CENTER" layoutX="263.0" layoutY="995.0" prefHeight="29.0" prefWidth="191.0" styleClass="settingslabel" text="API ключи от сервисов">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="OpenCageGeocodeAPIKeyEdit" layoutX="226.0" layoutY="1050.0" prefHeight="22.0" prefWidth="456.0" />
+                                          <TextField fx:id="HERERouteAPIKeyEdit" layoutX="226.0" layoutY="1093.0" prefHeight="22.0" prefWidth="457.0" />
+                                          <TextField fx:id="HEREWeatherAPIKeyEdit" layoutX="227.0" layoutY="1132.0" prefHeight="22.0" prefWidth="456.0" />
+                                          <Label layoutX="34.0" layoutY="1053.0" text="OpenCage Geocode API Key" />
+                                          <Label layoutX="34.0" layoutY="1096.0" text="HERE Route API key" />
+                                          <Label layoutX="34.0" layoutY="1135.0" text="HERE Weather API key" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane fx:id="ProductsPane" onMouseClicked="#ProductsClearSelection" prefHeight="579.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <Label alignment="CENTER" layoutX="321.0" layoutY="14.0" prefHeight="29.0" prefWidth="103.0" styleClass="settingslabel" text="Продукты">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TableView fx:id="ProductTable" layoutX="14.0" layoutY="62.0" onMouseClicked="#ProductsSelectProduct" prefHeight="428.0" prefWidth="717.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0">
+                                <columns>
+                                  <TableColumn fx:id="ProductNameColumn" prefWidth="696.3333282470703" text="Продукт" />
+                                </columns>
+                              </TableView>
+                              <TextField fx:id="ProductNameEdit" layoutX="61.0" layoutY="530.0" prefHeight="31.0" prefWidth="310.0" AnchorPane.leftAnchor="40.0" />
+                              <Label layoutX="188.0" layoutY="505.0" prefHeight="16.0" prefWidth="56.0" text="Продукт" />
+                              <Button fx:id="ProductAddBtn" layoutX="381.0" layoutY="531.0" mnemonicParsing="false" onAction="#ProductAdd" prefHeight="29.0" prefWidth="103.0" text="Добавить" />
+                              <Button fx:id="ProductSaveBtn" disable="true" layoutX="491.0" layoutY="531.0" mnemonicParsing="false" onAction="#ProductSave" prefHeight="29.0" prefWidth="103.0" text="Сохранить" />
+                              <Button fx:id="ProductDeleteBtn" disable="true" layoutX="601.0" layoutY="531.0" mnemonicParsing="false" onAction="#ProductDelete" prefHeight="29.0" prefWidth="103.0" text="Удалить" AnchorPane.rightAnchor="41.0" />
+                           </children></AnchorPane>
+                        <AnchorPane fx:id="OrganisationPane" onMouseClicked="#OrganisationClearSelect" prefHeight="579.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <Label alignment="CENTER" layoutX="321.0" layoutY="14.0" prefHeight="29.0" prefWidth="133.0" styleClass="settingslabel" text="Моя организация">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <Label layoutX="235.0" layoutY="71.0" text="Название" />
+                              <Label alignment="CENTER" layoutX="321.0" layoutY="106.0" prefHeight="29.0" prefWidth="133.0" styleClass="settingslabel" text="Адреса">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="OrganisationTitleEdit" layoutX="305.0" layoutY="68.0" styleClass="searchfield" />
+                              <TableView fx:id="OrganisationAddressTable" layoutX="21.0" layoutY="148.0" onMouseClicked="#OrganisationSelectAddress" prefHeight="298.0" prefWidth="708.0">
+                                 <columns>
+                                    <TableColumn fx:id="OrganisationIndexColumn" prefWidth="65.0" text="Индекс" />
+                                    <TableColumn fx:id="OrganisationRegionColumn" prefWidth="146.0" text="Регион" />
+                                    <TableColumn fx:id="OrganisationCityColumn" prefWidth="137.0" text="Город" />
+                                    <TableColumn fx:id="OrganisationCommentColumn" prefWidth="336.0" text="Комментарий" />
+                                 </columns>
+                              </TableView>
+                              <TextField fx:id="OrganisationIndexEdit" layoutX="34.0" layoutY="467.0" prefHeight="25.0" prefWidth="70.0" />
+                              <Label layoutX="47.0" layoutY="452.0" text="Индекс" />
+                              <TextField fx:id="OrganisationRegionEdit" layoutX="104.0" layoutY="467.0" prefHeight="25.0" prefWidth="299.0" />
+                              <Label layoutX="223.0" layoutY="452.0" text="Регион" />
+                              <TextField fx:id="OrganisationCityEdit" layoutX="403.0" layoutY="467.0" prefHeight="25.0" prefWidth="179.0" />
+                              <Label layoutX="474.0" layoutY="452.0" text="Город" />
+                              <TextField fx:id="OrganisationCommentEdit" layoutX="37.0" layoutY="509.0" prefHeight="25.0" prefWidth="545.0" />
+                              <Label layoutX="267.0" layoutY="492.0" text="Комментарий" />
+                              <Button fx:id="OrganisationDeleteAddressBtn" disable="true" layoutX="593.0" layoutY="508.0" mnemonicParsing="false" onAction="#OrganisationDeleteAddress" prefHeight="27.0" prefWidth="127.0" styleClass="controlbutton" text="Удалить" />
+                              <Button fx:id="OrganisationAddAddressBtn" layoutX="593.0" layoutY="467.0" mnemonicParsing="false" onAction="#OrganisationAddAddress" prefHeight="27.0" prefWidth="70.0" styleClass="controlbutton" text="Добав." />
+                              <Button fx:id="OrganisationSaveAddressBtn" disable="true" layoutX="663.0" layoutY="466.0" mnemonicParsing="false" onAction="#OrganisationSaveAddress" prefHeight="27.0" prefWidth="58.0" styleClass="controlbutton" text="Сохр." />
+                              <Button layoutX="298.0" layoutY="544.0" mnemonicParsing="false" onAction="#OrganisationSaveChanges" prefHeight="29.0" prefWidth="179.0" text="Сохранить изменения" />
+                           </children></AnchorPane>
+                        <AnchorPane fx:id="SavedSamplesPane" prefHeight="579.0" prefWidth="745.0" visible="false">
+                           <children>
+                              <Label alignment="CENTER" layoutX="284.0" layoutY="7.0" prefHeight="29.0" prefWidth="177.0" styleClass="settingslabel" text="Сохраненные выборки">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane fx:id="ConnectionPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="745.0" visible="false">
+                           <children>
+                              <Label layoutX="241.0" layoutY="26.0" prefHeight="34.0" prefWidth="264.0" styleClass="settingslabel" text="Соединение с базой данных">
+                                 <font>
+                                    <Font size="15.0" />
+                                 </font>
+                              </Label>
+                              <Label layoutX="210.0" layoutY="247.0" text="Пароль">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Label>
+                              <TextField fx:id="ConnectionDatabaseEdit" alignment="CENTER" layoutX="384.0" layoutY="138.0" prefHeight="34.0" prefWidth="177.0" promptText="e.g. 127.0.0.1/DBName" styleClass="searchfield" text="localhost/SelectProviders" />
+                              <TextField fx:id="ConnectionUsernameEdit" alignment="CENTER" layoutX="385.0" layoutY="190.0" prefHeight="34.0" prefWidth="177.0" promptText="e.g. username" styleClass="searchfield" text="root" />
+                              <PasswordField fx:id="ConnectionPassEdit" alignment="CENTER" layoutX="385.0" layoutY="238.0" prefHeight="34.0" prefWidth="177.0" promptText="e.g. password" styleClass="searchfield" text="root" />
+                              <CheckBox fx:id="ConnectionSaveArgumentsEdit" layoutX="462.0" layoutY="290.0" mnemonicParsing="false" prefHeight="16.0" prefWidth="16.0" />
+                              <Button fx:id="ConnectBtn" layoutX="210.0" layoutY="320.0" mnemonicParsing="false" onAction="#setConnect" prefHeight="34.0" prefWidth="165.0" text="Соединить" />
+                              <Button fx:id="DisconnectBtn" disable="true" layoutX="397.0" layoutY="320.0" mnemonicParsing="false" onAction="#setDisconnect" prefHeight="34.0" prefWidth="165.0" text="Разъединить" />
+                              <Label layoutX="210.0" layoutY="198.0" text="Имя пользователя">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Label>
+                              <Label layoutX="552.0" layoutY="557.0" text="Версия приложения 1.0 Alfa" />
+                              <Label layoutX="209.0" layoutY="146.0" text="Путь базы данных">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Label>
+                              <Label layoutX="210.0" layoutY="289.0" text="Сохранять данные">
+                                 <font>
+                                    <Font size="16.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                     </children></AnchorPane>
+               </children>
+            </HBox>
+            <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="21.0" prefWidth="900.0">
+               <children>
+                  <Label fx:id="StatusText" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="21.0" prefWidth="900.0" />
+               </children>
+            </Pane>
+         </children>
+      </VBox>
+      <AnchorPane fx:id="MessagePane" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="579.0" prefWidth="739.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Pane opacity="0.73" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: black;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <AnchorPane layoutX="175.0" layoutY="124.0" prefHeight="352.0" prefWidth="551.0" style="-fx-border-style: solid;" styleClass="contentpane">
+               <children>
+                  <Label layoutX="219.0" layoutY="14.0" prefHeight="33.0" prefWidth="114.0" styleClass="settingslabel" text="Сообщение" AnchorPane.bottomAnchor="305.0" AnchorPane.leftAnchor="208.0" AnchorPane.rightAnchor="208.0" AnchorPane.topAnchor="14.0" />
+                  <TextArea fx:id="MessageEdit" editable="false" layoutX="14.0" layoutY="55.0" prefHeight="237.0" prefWidth="523.0" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="60.0" />
+                  <Button layoutX="208.0" layoutY="298.0" mnemonicParsing="false" onAction="#CloseMessageBox" prefHeight="40.0" prefWidth="137.0" text="ОК" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="208.0" AnchorPane.rightAnchor="208.0" AnchorPane.topAnchor="298.0" />
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
