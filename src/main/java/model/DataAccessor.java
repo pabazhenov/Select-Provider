@@ -5,6 +5,10 @@
  */
 package model;
 
+import com.byteowls.jopencage.JOpenCageGeocoder;
+import com.byteowls.jopencage.model.JOpenCageForwardRequest;
+import com.byteowls.jopencage.model.JOpenCageLatLng;
+import com.byteowls.jopencage.model.JOpenCageResponse;
 import controller.MainsceneController;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,10 +26,15 @@ public class DataAccessor {
     private Connection connection;
     public String errorcode;
     private final MainsceneController mainform;
+    private final JOpenCageGeocoder jOpenCageGeocoder;
     public DataAccessor(){
         connection = null;
         errorcode="";
         mainform = Context.getInstance().getMainformController();
+        jOpenCageGeocoder = new JOpenCageGeocoder("8800b41d55de4774bea5723fd22aa2b1");
+    }
+    public boolean isConnected(){
+        return connection!=null;
     }
     public void setConnection(String username, String password, String databasepath) {
         if (username.equals("")
@@ -58,9 +67,11 @@ public class DataAccessor {
     public ObservableList<Product> getAllProducts(){
         ObservableList<Product> tempproducts = FXCollections.observableArrayList();
         try {
-            Statement stmnt = connection.createStatement();
-            String query = "Select * from Products";
-            ResultSet rs = stmnt.executeQuery(query);
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query = "Select * from Product";
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
             while (rs.next()) {
                 Product tempproduct = new Product();
                 tempproduct.setId(rs.getInt("id"));
@@ -70,83 +81,320 @@ public class DataAccessor {
             rs.close();
             stmnt.close();   
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
         }
         return tempproducts;
     }
-    public void addProduct(Product producttoadd) {
+    public Product findProduct(String productTitle){
+        Product tempproduct = null;
         try {
-            Statement stmnt = connection.createStatement();
-            ResultSet rs = stmnt.executeQuery("SELECT * From Products where title=\""+producttoadd.getTitle()+"\"");
-            if (!rs.next()) {
-                String query = "INSERT INTO Products SET title='"+producttoadd.getTitle()+"'";
-                stmnt.execute(query);
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query="Select * from Product where title=\""+productTitle+"\"";
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
+            while (rs.next()) {
+                tempproduct = new Product();
+                tempproduct.setId(rs.getInt("id"));
+                tempproduct.setTitle(rs.getString("title"));
             }
-            else
-                mainform.showMessage("Данный продукт поставки уже есть в списке!");
             rs.close();
             stmnt.close();
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
+        }
+        return tempproduct;
+    }
+    public void addProduct(Product producttoadd) {
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query = "INSERT INTO Product SET title='"+producttoadd.getTitle()+"'";
+            stmnt.execute(query);
+            stmnt.close();
+            mainform.StatusTextRight.setText("Продукт добавлен в список.");
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
         }
         
     }
     public void updateProduct(Product producttoupdate){
         try {
-            Statement stmnt = connection.createStatement();
-            String query = "UPDATE `Products` SET `title` = '"+
-                    producttoupdate.getTitle()+"' WHERE `Products`.`id` = "+producttoupdate.getId()+"";
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query = "UPDATE `Product` SET `title` = '"+
+                    producttoupdate.getTitle()+"' WHERE `Product`.`id` = "+producttoupdate.getId()+"";
             stmnt.execute(query);
             stmnt.close();
+            mainform.StatusTextRight.setText("Продукт отредактирован.");
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
         }  
     }
     public void deleteProduct(Product producttodelete) {
         try {
-            Statement stmnt = connection.createStatement();
-            String query1="DELETE FROM `Products` WHERE `Products`.`id` = "+producttodelete.getId();
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query1="DELETE FROM `Product` WHERE `Product`.`id` = "+producttodelete.getId();
             stmnt.execute(query1);
-            String query2="DELETE FROM `ProductsToProvider` WHERE `id_products` = "+producttodelete.getId();
+            String query2="DELETE FROM `ProductToProvider` WHERE `id_product` = "+producttodelete.getId();
             stmnt.execute(query2);
             stmnt.close();
+            mainform.StatusTextRight.setText("Продукт удален из списка.");
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
         }
     
     }
-    
+    private Address getCoordinates(Address adr){
+        String requestQuery = adr.getIndex()+","+adr.getRegion()+","+adr.getCity();
+        JOpenCageForwardRequest request = new JOpenCageForwardRequest(requestQuery);
+        request.setRestrictToCountryCode("ru"); // restrict results to a specific country
+        JOpenCageResponse response = jOpenCageGeocoder.forward(request);
+        JOpenCageLatLng firstResultLatLng = response.getFirstPosition();
+        adr.setLatitude(firstResultLatLng.getLat().toString());
+        adr.setLongitude(firstResultLatLng.getLng().toString());
+        return adr;
+    }
+    public Provider findProvider(String ProviderTitle) {
+        Provider tempprovider = null;
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query = "Select * From Provider where title=\""+ProviderTitle+"\"";
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
+            while (rs.next()) {
+                tempprovider = new Provider();
+                tempprovider.setTitle(rs.getString("title"));
+                tempprovider.setId(rs.getInt("id"));
+                tempprovider.setInn(rs.getString("inn"));
+                tempprovider.setKpp(rs.getString("kpp"));
+                tempprovider.setOgrn(rs.getString("ogrn"));
+                tempprovider.setOkpo(rs.getString("okpo"));
+                tempprovider.setOktmo(rs.getString("oktmo"));
+            }
+            rs.close();
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
+        return tempprovider;
+    }
     public void addProvider(Provider providertoadd) {
-        mainform.showMessage("Поставщик добавлен!");
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            // добавляем поставщика
+            String query = "INSERT INTO Provider SET title=\""+providertoadd.getTitle()+"\","
+                            +" ogrn='"+providertoadd.getOgrn()+"',"
+                            +" inn='"+providertoadd.getInn()+"',"
+                            +" kpp='"+providertoadd.getKpp()+"',"
+                            +" okpo='"+providertoadd.getOkpo()+"',"
+                            +" oktmo='"+providertoadd.getOktmo()+"'";
+            stmnt.execute(query);
+            Provider foundProvider = findProvider(providertoadd.getTitle());
+            if (foundProvider!=null) {
+                providertoadd.setId(foundProvider.getId());
+                //добавляем адреса поставщика
+                for (Address adr:providertoadd.addresses) {
+                    adr = getCoordinates(adr);
+                    query="Insert Into Address Set mail_index='"+adr.getIndex()+"',"
+                            + " region=\""+adr.getRegion()+"\","
+                            + " city=\""+adr.getCity()+"\","
+                            + " comment=\""+adr.getComment()+"\","
+                            + " latitude='"+adr.getLatitude()+"',"
+                            + " longitude='"+adr.getLongitude()+"',"
+                            + " id_organisation='-1',"
+                            + " id_provider='"+providertoadd.getId()+"'";
+                    stmnt.execute(query);
+                }
+                // Добавляем продукты поставщика
+                for (ProductToProvider ptp:providertoadd.products) {
+                    if (ptp.getIsprovide().equals("да")){
+                        query="INSERT INTO ProductToProvider SET id_provider='"+providertoadd.getId()+"', "
+                                + "id_product='"+ptp.getProduct().getId()+"'";
+                        stmnt.execute(query);
+                    }
+                }
+                // Добавляем критерии поставщика
+                for (CriteriaToProvider ctp:providertoadd.criteries) {
+                    String basequery="INSERT INTO CriteriaToProvider SET id_provider='"+providertoadd.getId()+"',"
+                            + " id_criteria='"+ctp.getCriteria().getId()+"', ";
+                    if (ctp.getValue().equals("да")||ctp.getValue().equals("нет")) {
+                        if (ctp.getValue().equals("да")) {
+                            query=basequery+"value='10'";
+                            stmnt.execute(query);
+                        }
+                        else {
+                            query=basequery+"value='0'";
+                            stmnt.execute(query);
+                        }
+                    }
+                    else {
+                        query=basequery+"value='"+ctp.getValue()+"'";
+                        stmnt.execute(query);
+                    }
+                }
+            }
+            stmnt.close();
+            mainform.StatusTextRight.setText("Поставщик добавлен.");
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
     }
     public void deleteProvider(Provider providertodelete) {
-        mainform.showMessage("поставщик удален");
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query="Delete from Provider where id='"+providertodelete.getId()+"'";
+            stmnt.execute(query);
+            query="Delete from ProductToProvider where id_provider='"+providertodelete.getId()+"'";
+            stmnt.execute(query);
+            query="Delete from CriteriaToProvider where id_provider='"+providertodelete.getId()+"'";
+            stmnt.execute(query);
+            query="Delete from Address where id_provider='"+providertodelete.getId()+"'";
+            stmnt.execute(query);
+            stmnt.close();
+            mainform.StatusTextRight.setText("Поставщик удален.");
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
     }
     public void updateProvider(Provider providertoupdate) {
-        mainform.showMessage("поставщик отредактирован");
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            // Сначала обновляем основную информацию о поставщике
+            String query = "Update Provider set title=\""+providertoupdate.getTitle()+"\","
+                    + " ogrn='"+providertoupdate.getOgrn()+"',"
+                    + " inn='"+providertoupdate.getInn()+"',"
+                    + " kpp='"+providertoupdate.getKpp()+"',"
+                    + " okpo='"+providertoupdate.getOkpo()+"',"
+                    + " oktmo='"+providertoupdate.getOktmo()+"'"
+                    + " where id='"+providertoupdate.getId()+"'";
+            stmnt.execute(query);
+            // Апдейтим адреса
+            // Удалим те строки, которых нет в списке адресов организации.
+            //Delete from Address where id_provider=1 and not id in (1,2,3,4,5)
+            // Формируем список id из списка. Т.к новые - либо 0 либо отрицательные, то повлияет только
+            // на те, которых в списке нет.
+            String idList="";
+            for (Address adr:providertoupdate.addresses) {
+                idList+=String.valueOf(adr.getId())+",";
+            }
+            if (!idList.equals("")) {
+                idList = idList.substring(0, idList.length()-1);
+                query="Delete from Address where id_provider="+providertoupdate.getId()+
+                        " and not id in ("+idList+")";
+                stmnt.execute(query);
+            }
+            // Если список idList пустой, т.е. поставщик не имеет адресов, 
+            // то удаляем адреса поставщика из базы если есть
+            else {
+                query="Delete from Address where id_provider='"+providertoupdate.getId()+"'";
+                stmnt.execute(query);
+            }
+            // Апдейтим существующие и добавляем новые адреса
+            // Если список адресов всетаки не пустой
+            for (Address adr:providertoupdate.addresses) {
+                if (adr.getId()>0) {
+                    adr = getCoordinates(adr);
+                    query="Update Address set mail_index='"+adr.getIndex()+"',"
+                            + " region=\""+adr.getRegion()+"\","
+                            + " city=\""+adr.getCity()+"\","
+                            + " comment=\""+adr.getComment()+"\","
+                            + " latitude='"+adr.getLatitude()+"',"
+                            + " longitude='"+adr.getLongitude()+"'"
+                            + " where id=\""+adr.getId()+"\"";
+                    stmnt.execute(query);
+                }
+                else {
+                    adr = getCoordinates(adr);
+                    query="Insert into Address set mail_index='"+adr.getIndex()+"',"
+                            + " region=\""+adr.getRegion()+"\","
+                            + " city=\""+adr.getCity()+"\","
+                            + " comment=\""+adr.getComment()+"\","
+                            + " latitude='"+adr.getLatitude()+"',"
+                            + " longitude='"+adr.getLongitude()+"',"
+                            + " id_organisation='-1',"
+                            + " id_provider='"+providertoupdate.getId()+"'";
+                    stmnt.execute(query);
+                }
+            }
+            // Апдейтим значения критериев
+            for (CriteriaToProvider ctp:providertoupdate.criteries) {
+                if(ctp.getValue().equals("да")||ctp.getValue().equals("нет")) {
+                    if(ctp.getValue().equals("да")){
+                        query="Update CriteriaToProvider set value ='10'"
+                                + " where id_criteria='"+ctp.getCriteria().getId()+"' and"
+                                + " id_provider='"+providertoupdate.getId()+"'";
+                        stmnt.execute(query);
+                    }
+                    // if .equals("нет")
+                    else {
+                        query="Update CriteriaToProvider set value ='0'"
+                                + " where id_criteria='"+ctp.getCriteria().getId()+"' and"
+                                + " id_provider='"+providertoupdate.getId()+"'";
+                        stmnt.execute(query);
+                    }
+                }
+                else {
+                    query="Update CriteriaToProvider set value ='"+ctp.getValue()+"'"
+                                + " where id_criteria='"+ctp.getCriteria().getId()+"' and"
+                                + " id_provider='"+providertoupdate.getId()+"'";
+                    stmnt.execute(query);
+                }
+            }
+            // Апдейтим значения продуктов поставки
+            for (ProductToProvider ptp:providertoupdate.products) {
+                if (ptp.getIsprovide().equals("да")) {
+                    // Убедимся, что такая строка есть в БД
+                    query="Select * from ProductToProvider where id_provider='"+providertoupdate.getId()+"'"
+                            + " and id_product='"+ptp.getProduct().getId()+"'";
+                    ResultSet rs;
+                    rs = stmnt.executeQuery(query);
+                    // Если ее нет, то вставляем строку
+                    if (!rs.next()) {
+                        query="Insert into ProductToProvider set id_provider='"+providertoupdate.getId()+"',"
+                                + " id_product='"+ptp.getProduct().getId()+"'";
+                        stmnt.execute(query);
+                    }
+                    rs.close();
+                }
+                // Если не поставляет, удаляем данную пару.
+                else {
+                    query="Delete from ProductToProvider where id_provider='"+providertoupdate.getId()+"'"
+                            + " and id_product='"+ptp.getProduct().getId()+"'";
+                    stmnt.execute(query);
+                }
+            }
+            stmnt.close();
+            mainform.StatusTextRight.setText("Изменения сохранены");
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
     }
     public ObservableList<Provider> getAllProviders() {
         ObservableList<Provider> tempproviders = FXCollections.observableArrayList();
         try {
-            
-            Statement stmnt = connection.createStatement();
+            Statement stmnt;
+            stmnt = connection.createStatement();
             String query="SELECT * FROM Provider";
-            ResultSet rs = stmnt.executeQuery(query);
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
             while (rs.next()) {
                 Provider tempprovider = new Provider();
                 tempprovider.setId(rs.getInt("id"));
                 tempprovider.setInn(rs.getString("inn"));
                 tempprovider.setKpp(rs.getString("kpp"));
-                tempprovider.setOgrn(rs.getString("orgn"));
+                tempprovider.setOgrn(rs.getString("ogrn"));
                 tempprovider.setOkpo(rs.getString("okpo"));
                 tempprovider.setOktmo(rs.getString("oktmo"));
                 tempprovider.setTitle(rs.getString("title"));
                 // Выбираем адреса поставщика
-                Statement substmnt = connection.createStatement();
+                Statement substmnt;
+                substmnt = connection.createStatement();
                 String selectAddresses="Select * FROM Address where id_provider="+tempprovider.getId()+"";
                 ResultSet subrs = substmnt.executeQuery(selectAddresses);
                 while (subrs.next()) {
@@ -162,9 +410,10 @@ public class DataAccessor {
                 }
                 // Выбираем продукты поставщика
                 String selectPTP="SELECT p.*, ptp.id ptp_id\n" +
-                                    "FROM Products p\n" +
-                                    "LEFT JOIN ProductsToProvider ptp "+
-                                    "ON p.id = ptp.id_products and ptp.id_provider="+tempprovider.getId()+"";
+                                    "FROM Product p\n" +
+                                    "LEFT JOIN ProductToProvider ptp "+
+                                    "ON p.id = ptp.id_product and ptp.id_provider="+tempprovider.getId()
+                                    +" ORDER BY p.id";
                 subrs = substmnt.executeQuery(selectPTP);
                 while (subrs.next()) {
                     ProductToProvider tempptp = new ProductToProvider();
@@ -215,8 +464,101 @@ public class DataAccessor {
             rs.close();
             stmnt.close();
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
+        }
+        return tempproviders;
+    }
+    public ObservableList<Provider> getAllProviders(Product product) {
+        ObservableList<Provider> tempproviders = FXCollections.observableArrayList();
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query="SELECT p.* FROM Provider p, ProductToProvider ptp where "
+                    + "p.id=ptp.id_provider and ptp.id_product='"+product.getId()+"'";
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
+            while (rs.next()) {
+                Provider tempprovider = new Provider();
+                tempprovider.setId(rs.getInt("id"));
+                tempprovider.setInn(rs.getString("inn"));
+                tempprovider.setKpp(rs.getString("kpp"));
+                tempprovider.setOgrn(rs.getString("ogrn"));
+                tempprovider.setOkpo(rs.getString("okpo"));
+                tempprovider.setOktmo(rs.getString("oktmo"));
+                tempprovider.setTitle(rs.getString("title"));
+                // Выбираем адреса поставщика
+                Statement substmnt;
+                substmnt = connection.createStatement();
+                String selectAddresses="Select * FROM Address where id_provider="+tempprovider.getId()+"";
+                ResultSet subrs = substmnt.executeQuery(selectAddresses);
+                while (subrs.next()) {
+                    Address tempaddr = new Address();
+                    tempaddr.setId(subrs.getInt("id"));
+                    tempaddr.setIndex(subrs.getString("mail_index"));
+                    tempaddr.setRegion(subrs.getString("region"));
+                    tempaddr.setCity(subrs.getString("city"));
+                    tempaddr.setComment(subrs.getString("comment"));
+                    tempaddr.setLatitude(subrs.getString("latitude"));
+                    tempaddr.setLongitude(subrs.getString("longitude"));
+                    tempprovider.addresses.add(tempaddr);
+                }
+                // Выбираем продукты поставщика
+                String selectPTP="SELECT p.*, ptp.id ptp_id\n" +
+                                    "FROM Product p\n" +
+                                    "LEFT JOIN ProductToProvider ptp "+
+                                    "ON p.id = ptp.id_product and ptp.id_provider="+tempprovider.getId()
+                                    +" ORDER BY p.id";
+                subrs = substmnt.executeQuery(selectPTP);
+                while (subrs.next()) {
+                    ProductToProvider tempptp = new ProductToProvider();
+                    Product tempproduct = new Product();
+                    tempproduct.setId(subrs.getInt("id"));
+                    tempproduct.setTitle(subrs.getString("title"));
+                    tempptp.setProduct(tempproduct);
+                    int isprovide = subrs.getInt("ptp_id");
+                    if (isprovide==0) {
+                        tempptp.setIsprovide("нет");
+                    } else {
+                        tempptp.setIsprovide("да");
+                    }
+                    tempprovider.products.add(tempptp);
+                }
+                // Выбираем критерии поставщика
+                String selectCTP="Select c.*, ctp.value\n, ctp.id ctp_id " +
+                                    "FROM Criteria c \n" +
+                                    "LEFT JOIN CriteriaToProvider ctp\n" +
+                                    "ON c.id=ctp.id_criteria and ctp.id_provider="+tempprovider.getId()+"";
+                subrs = substmnt.executeQuery(selectCTP);
+                while (subrs.next()){
+                    Criteria tempcriteria = new Criteria();
+                    tempcriteria.setId(subrs.getInt("id"));
+                    tempcriteria.setTitle(subrs.getString("title"));
+                    tempcriteria.setImportance(subrs.getInt("importance"));
+                    tempcriteria.setBinarytype(subrs.getInt("binarytype"));
+                    CriteriaToProvider tempctp = new CriteriaToProvider();
+                    tempctp.setCriteria(tempcriteria);
+                    tempctp.setId(subrs.getInt("ctp_id"));
+                    int val=subrs.getInt("value");
+                    if (tempcriteria.getBinarytype()==1) {
+                        if (val==0)
+                            tempctp.setValue("нет");
+                        else
+                            tempctp.setValue("да");
+                    }
+                    else {
+                        tempctp.setValue(String.valueOf(val));
+                    }
+                    tempprovider.criteries.add(tempctp);
+                }
+                subrs.close();
+                substmnt.close();
+                // Выбираем продукты поставщика
+                tempproviders.add(tempprovider);
+            }
+            rs.close();
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
         }
         return tempproviders;
     }
@@ -244,20 +586,73 @@ public class DataAccessor {
                 temporganisation.addresses.add(tempaddr);
             }
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
         }
         return temporganisation;
     }
     public void updateOrganisation(Organisation organisation) {
-        mainform.showMessage("Изменения сохранены");
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            // Апдейтим организацию
+            String query="Update Organisation set title=\""+organisation.getTitle()+"\" "
+                        + "where id='"+organisation.getId()+"'";
+            stmnt.execute(query);
+            // Апдейтим адреса
+            // Удалим те строки, которых нет в списке адресов организации.
+            //Delete from Address where id_organisation=1 and not id in (1,2,3,4,12)
+            // Формируем список id из списка. Т.к новые - либо 0 либо отрицательные, то повлияет только
+            // на те, которых в списке нет.
+            String idList="";
+            for (Address adr:organisation.addresses) {
+                idList+=String.valueOf(adr.getId())+",";
+            }
+            if (!idList.equals("")) {
+                idList = idList.substring(0, idList.length()-1);
+                query="Delete from Address where id_organisation="+organisation.getId()+
+                        " and not id in ("+idList+")";
+                stmnt.execute(query);
+            }
+            // Апдейтим существующие и добавляем новые адреса
+            for (Address adr:organisation.addresses) {
+                if (adr.getId()>0) {
+                    adr = getCoordinates(adr);
+                    query="Update Address set mail_index='"+adr.getIndex()+"',"
+                            + " region=\""+adr.getRegion()+"\","
+                            + " city=\""+adr.getCity()+"\","
+                            + " comment=\""+adr.getComment()+"\","
+                            + " latitude='"+adr.getLatitude()+"',"
+                            + " longitude='"+adr.getLongitude()+"'"
+                            + " where id=\""+adr.getId()+"\"";
+                    stmnt.execute(query);
+                }
+                else {
+                    adr = getCoordinates(adr);
+                    query="Insert into Address set mail_index='"+adr.getIndex()+"',"
+                            + " region=\""+adr.getRegion()+"\","
+                            + " city=\""+adr.getCity()+"\","
+                            + " comment=\""+adr.getComment()+"\","
+                            + " latitude='"+adr.getLatitude()+"',"
+                            + " longitude='"+adr.getLongitude()+"',"
+                            + " id_organisation='"+organisation.getId()+"',"
+                            + " id_provider='-1'";
+                    stmnt.execute(query);
+                }
+            }
+            stmnt.close();
+            mainform.StatusTextRight.setText("Изменения сохранены.");
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }     
     }
     public ObservableList<Criteria> getAllCriteries() {
         ObservableList<Criteria> tempcriteries = FXCollections.observableArrayList();
         try {
-            Statement stmnt = connection.createStatement();
+            Statement stmnt;
+            stmnt = connection.createStatement();
             String query="Select * from Criteria";
-            ResultSet rs = stmnt.executeQuery(query);
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
             while (rs.next()) {
                 Criteria tempcriteria = new Criteria();
                 tempcriteria.setTitle(rs.getString("title"));
@@ -269,8 +664,7 @@ public class DataAccessor {
             rs.close();
             stmnt.close();
         } catch (SQLException ex) {
-            errorcode = ex.toString();
-            mainform.showMessage(errorcode);
+            mainform.showMessage(ex.toString());
         }
         return tempcriteries;
     }

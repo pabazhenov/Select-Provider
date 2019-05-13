@@ -1,5 +1,6 @@
 package model;
 
+import controller.MainsceneController;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.Parent;
@@ -21,7 +22,9 @@ public class MainApp extends Application {
     }
     @Override
     public void stop() {
-        Context.getInstance().getMainformController().dataaccessor.setDisconnect();
+        MainsceneController mf = Context.getInstance().getMainformController();
+        if (mf.dataaccessor.isConnected())
+            mf.dataaccessor.setDisconnect();
     }
 
     /**

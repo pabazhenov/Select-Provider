@@ -51,7 +51,9 @@ public class MainsceneController implements Initializable {
     @FXML
     private Button ConnectionBtn;
     @FXML
-    private Label StatusText;
+    private Label StatusTextLeft;
+    @FXML
+    public Label StatusTextRight;
     
     //ConnectionPane
     @FXML
@@ -243,25 +245,102 @@ public class MainsceneController implements Initializable {
     @FXML
     private AnchorPane ChoosePhase1Pane;
     @FXML
-    private TableView<Product> Phase1ProductTable;
+    private TableView<Address> Phase1OrganisationAddressTable;
     @FXML
-    private TableColumn<Product, String> Phase1ProductNameColumn;
+    private TableColumn<Address, String> Phase1OrganisationIndexColumn;
+    @FXML
+    private TableColumn<Address, String> Phase1OrganisationRegionColumn;
+    @FXML
+    private TableColumn<Address, String> Phase1OrganisationCityColumn;
+    @FXML
+    private TableColumn<Address, String> Phase1OrganisationCommentColumn;
     @FXML
     private Button Phase1GetForwardBtn;
     
+
     //Choose Provider Phase2
     @FXML
     private AnchorPane ChoosePhase2Pane;
     @FXML
-    private TableView<?> Phase2ProviderTable;
+    private TableView<Product> Phase2ProductTable;
     @FXML
-    private TableColumn<?, ?> Phase2ProviderNameColumn;
+    private TableColumn<Product, String> Phase2ProductNameColumn;
     @FXML
-    private TableColumn<?, ?> Phase2ProviderRatingColumn;
+    private Button Phase2GetForwardBtn;
+    
+    //Choose Provider Phase3
     @FXML
-    private TextField Phase2MinProviderRatingEdit;
+    private AnchorPane ChoosePhase3Pane;
     @FXML
-    private TextField Phase2MaxTimeEdit;
+    private TableView<Provider> Phase3ProviderTable;
+    @FXML
+    private TableColumn<Provider, String> Phase3ProviderNameColumn;
+    @FXML
+    private TableColumn<Provider, Integer> Phase3ProviderRatingColumn;
+    @FXML
+    private TextField Phase3MinProviderRatingEdit;
+    @FXML
+    private TextField Phase3MaxTimeEdit;
+    @FXML
+    private ComboBox<String> Phase3ImportanceWayEdit;
+    @FXML
+    private ComboBox<String> Phase3ImportanceRatingEdit;
+    
+    //Choose Provider Phase4
+    @FXML
+    private AnchorPane ChoosePhase4Pane;
+    @FXML
+    private TextArea Phase4LogEdit;
+    @FXML
+    private TableView<?> Phase4OtherWayTable;
+    @FXML
+    private TableColumn<?, ?> Phase4OtherProviderColumn;
+    @FXML
+    private TableColumn<?, ?> Phase4OtherAddressColumn;
+    @FXML
+    private TableColumn<?, ?> Phase4OtherWayLengthColumn;
+    @FXML
+    private TableColumn<?, ?> Phase4OtherWayTime;
+    @FXML
+    private TableColumn<?, ?> Phase4OtherWayRatingColumn;
+    @FXML
+    private TableView<?> Phase4BestWayTable;
+    @FXML
+    private TableColumn<?, ?> Phase4BestProviderColumn;
+    @FXML
+    private TableColumn<?, ?> Phase4BestAddressColumn;
+    @FXML
+    private TableColumn<?, ?> Phase4BestWayLengthColumn;
+    @FXML
+    private TableColumn<?, ?> Phase4BestWayTime;
+    @FXML
+    private TableColumn<?, ?> Phase4BestWayRatingColumn;
+    @FXML
+    private Button Phase4GetForwardBtn;
+    
+    //Choose Provider Phase5
+    @FXML
+    private AnchorPane ChoosePhase5Pane;
+    @FXML
+    private TextField Phase5ProviderEdit;
+    @FXML
+    private TextField Phase5ProductEdit;
+    @FXML
+    private TextField Phase5StartEdit;
+    @FXML
+    private TextField Phase5AVGTimeEdit;
+    @FXML
+    private TextField Phase5LengthEdit;
+    @FXML
+    private TextField Phase5EndEdit;
+    @FXML
+    private TextField Phase5RatingProviderEdit;
+    @FXML
+    private TextField Phase5RatingCommonEdit;
+    @FXML
+    private TextField Phase5RatingWayEdit;
+    @FXML
+    private TextField Phase5AverageDangerEdit;
     
     //Products Pane
     @FXML
@@ -322,6 +401,14 @@ public class MainsceneController implements Initializable {
     // методом уменьшения значения (т.к. в базе только положительные и чтобы их исключить)
     // унифицируем каждый добавленный адрес. При Save Changes значение обнуляется.
     int iteratorId;
+    // Сделано на случай, если будут появлятся несколько экзепшенов. Для удобства.
+    int emessageid;
+    // Переменные выбора поставщиков
+    Product selectedproduct;
+    ObservableList<Provider> providerswithproduct;
+    Address organisationaddress;
+
+    
 
     
     
@@ -330,11 +417,13 @@ public class MainsceneController implements Initializable {
     //Общие функции (применимы ко всем Panes)
     public void showMessage(String msg) {
         MessagePane.setVisible(true);
-        MessageEdit.setText("\n"+msg);
+        emessageid++;
+        MessageEdit.appendText("\n"+emessageid+": "+msg);
     }
     @FXML
     private void CloseMessageBox(ActionEvent event) {
-        MessageEdit.setText("");
+        MessageEdit.setText(null);
+        emessageid=0;
         MessagePane.setVisible(false);
     }
 
@@ -348,6 +437,9 @@ public class MainsceneController implements Initializable {
         EditProviderPane.setVisible(false);
         ChoosePhase1Pane.setVisible(false);
         ChoosePhase2Pane.setVisible(false);
+        ChoosePhase3Pane.setVisible(false);
+        ChoosePhase4Pane.setVisible(false);
+        ChoosePhase5Pane.setVisible(false);
         OrganisationPane.setVisible(false);
         ProductsPane.setVisible(false);
         SavedSamplesPane.setVisible(false);
@@ -373,6 +465,9 @@ public class MainsceneController implements Initializable {
         EditProviderPane.setVisible(false);
         ChoosePhase1Pane.setVisible(false);
         ChoosePhase2Pane.setVisible(false);
+        ChoosePhase3Pane.setVisible(false);
+        ChoosePhase4Pane.setVisible(false);
+        ChoosePhase5Pane.setVisible(false);
         OrganisationPane.setVisible(false);
         ProductsPane.setVisible(false);
         SavedSamplesPane.setVisible(false);
@@ -416,6 +511,7 @@ public class MainsceneController implements Initializable {
                 ProvidersAddBtn.setDisable(false);
                 ProvidersEditBtn.setDisable(true);
                 ProvidersDeleteBtn.setDisable(true);
+                providertoedit=null;
                 break;
             case "EditProviderPane":
                 EditProviderAddressTable.getSelectionModel().clearSelection();
@@ -439,6 +535,11 @@ public class MainsceneController implements Initializable {
                 EditProviderCriteriaValueEdit.setValue("");
                 EditProviderCriteriaValueEdit.getItems().setAll();                
                 break;
+            case "ChoosePhase1Pane":
+                Phase1OrganisationAddressTable.getSelectionModel().clearSelection();
+                Phase1GetForwardBtn.setDisable(true);
+                organisationaddress=null;
+                break;
         }
     }
     
@@ -453,8 +554,12 @@ public class MainsceneController implements Initializable {
         Context.getInstance().setMainformController(this);
         // Отображаем форму и вызываем конструктор соединения и кастомных переменных
         dataaccessor = new DataAccessor();
+        providerswithproduct = FXCollections.observableArrayList();
         providertoedit = null;
         organisation = null;
+        selectedproduct=null;
+        organisationaddress=null;
+        emessageid=0;
         showStartPane();
         
         // Подготавливаем таблицы к выгрузке данных
@@ -494,6 +599,22 @@ public class MainsceneController implements Initializable {
         OrganisationRegionColumn.setCellValueFactory(new PropertyValueFactory("region"));
         OrganisationCityColumn.setCellValueFactory(new PropertyValueFactory("city"));
         OrganisationCommentColumn.setCellValueFactory(new PropertyValueFactory("comment"));
+        //Страница выбор поставщика
+        Phase1OrganisationIndexColumn.setCellValueFactory(new PropertyValueFactory("index"));
+        Phase1OrganisationRegionColumn.setCellValueFactory(new PropertyValueFactory("region"));
+        Phase1OrganisationCityColumn.setCellValueFactory(new PropertyValueFactory("city"));
+        Phase1OrganisationCommentColumn.setCellValueFactory(new PropertyValueFactory("comment"));
+        Phase2ProductNameColumn.setCellValueFactory(new PropertyValueFactory("title"));
+        Phase3ProviderNameColumn.setCellValueFactory(new PropertyValueFactory("title"));
+        Phase3ProviderRatingColumn.setCellValueFactory(new PropertyValueFactory("rating"));
+        ObservableList<String> vals = FXCollections.observableArrayList();
+        for(int i=1;i<10;i++) {
+            vals.add("0."+i);
+        }
+        Phase3ImportanceWayEdit.setItems(vals);
+        Phase3ImportanceRatingEdit.setItems(vals);
+        Phase3ImportanceRatingEdit.setValue("0.5");
+        Phase3ImportanceWayEdit.setValue("0.5");
         
  
     }
@@ -503,7 +624,7 @@ public class MainsceneController implements Initializable {
         dataaccessor.setDisconnect();
         if (dataaccessor.errorcode.equals("")) {
             showStartPane();
-            StatusText.setText("");
+            StatusTextLeft.setText("");
         } else {
         }
     }
@@ -513,7 +634,7 @@ public class MainsceneController implements Initializable {
                                     ConnectionPassEdit.getText(),
                                     ConnectionDatabaseEdit.getText());
         if (dataaccessor.errorcode.equals("")) {
-            StatusText.setText("Подключен к Базе данных: "+ConnectionDatabaseEdit.getText()+
+            StatusTextLeft.setText("Подключен к Базе данных: "+ConnectionDatabaseEdit.getText()+
                         ","+" пользователь:"+ConnectionUsernameEdit.getText());
             ConnectBtn.setDisable(true);
             DisconnectBtn.setDisable(false);
@@ -521,7 +642,7 @@ public class MainsceneController implements Initializable {
             ConnectionDatabaseEdit.setDisable(true);
             ConnectionPassEdit.setDisable(true);
             ConnectionSaveArgumentsEdit.setDisable(true);
-            showPane(ChoosePhase1Pane,ChooseProviderBtn);
+            showPane(ConnectionPane,ConnectionBtn);
         }
     }
     @FXML
@@ -554,9 +675,14 @@ public class MainsceneController implements Initializable {
         Product producttoadd = new Product();
         producttoadd.setTitle(ProductNameEdit.getText());
         if (!producttoadd.getTitle().equals("")) {
-            dataaccessor.addProduct(producttoadd);
-            ProductTable.setItems(dataaccessor.getAllProducts());
-            clearSelection("ProductsPane");
+            if (dataaccessor.findProduct(producttoadd.getTitle())!=null) {
+                showMessage("Данный продукт уже есть в списке!");
+            }
+            else {
+                dataaccessor.addProduct(producttoadd);
+                ProductTable.setItems(dataaccessor.getAllProducts());
+                clearSelection("ProductsPane");
+            }
         }
     }
 
@@ -580,12 +706,6 @@ public class MainsceneController implements Initializable {
             ProductTable.setItems(dataaccessor.getAllProducts());
             clearSelection("ProductsPane");
         }
-    }
-    
-    // Функции Choose Provider Pane =============================
-    @FXML
-    private void showChooseProviders(ActionEvent event) {
-        showPane(ChoosePhase1Pane,ChooseProviderBtn);
     }
     
     // Функции Organisation Pane =============================
@@ -660,7 +780,13 @@ public class MainsceneController implements Initializable {
 
     @FXML
     private void OrganisationSaveChanges(ActionEvent event) {
+        organisation.setTitle(OrganisationTitleEdit.getText());
+        organisation.addresses=OrganisationAddressTable.getItems();
         dataaccessor.updateOrganisation(organisation);
+        organisation = dataaccessor.getOrganisation();
+        OrganisationTitleEdit.setText(organisation.getTitle());
+        OrganisationAddressTable.setItems(organisation.addresses);
+        showPane(OrganisationPane, OrganisationBtn);
         iteratorId=0;
     }
 
@@ -761,18 +887,55 @@ public class MainsceneController implements Initializable {
     @FXML
     private void ProvidersClearSelection(MouseEvent event) {
         clearSelection("ProvidersPane");
-        providertoedit = null;
     }
     // Функции Edit Provider =============================
     @FXML
     private void EditProviderSaveProvider(ActionEvent event) {
-        if(providertoedit.getId()==0)
-            dataaccessor.addProvider(providertoedit);
-        else dataaccessor.updateProvider(providertoedit);
+        if(providertoedit!=null) {
+            // Если поставщик новый (ID=0)
+            if (providertoedit.getId()==0) {
+                providertoedit.setTitle(EditProviderNameEdit.getText());
+                providertoedit.setInn(EditProviderINNEdit.getText());
+                providertoedit.setKpp(EditProviderKPPEdit.getText());
+                providertoedit.setOgrn(EditProviderOGRNEdit.getText());
+                providertoedit.setOkpo(EditProviderOKPOEdit.getText());
+                providertoedit.setOktmo(EditProviderOKTMOEdit.getText());
+                providertoedit.addresses=EditProviderAddressTable.getItems();
+                providertoedit.criteries=EditProviderCriteriaTable.getItems();
+                providertoedit.products=EditProviderProductTable.getItems();
+                if (dataaccessor.findProvider(providertoedit.getTitle())!=null) {
+                    showMessage("Данное имя поставщика уже занято!");
+                }
+                else {
+                    dataaccessor.addProvider(providertoedit);
+                    ProvidersTable.setItems(dataaccessor.getAllProviders());
+                    clearSelection("ProvidersPane");
+                    showPane(ProvidersPane,ProvidersBtn);
+                }
+            }
+            // Если поставщик редактируется (ID!=0, соотв ID>0)
+            else {
+                providertoedit.setTitle(EditProviderNameEdit.getText());
+                providertoedit.setInn(EditProviderINNEdit.getText());
+                providertoedit.setKpp(EditProviderKPPEdit.getText());
+                providertoedit.setOgrn(EditProviderOGRNEdit.getText());
+                providertoedit.setOkpo(EditProviderOKPOEdit.getText());
+                providertoedit.setOktmo(EditProviderOKTMOEdit.getText());
+                providertoedit.addresses=EditProviderAddressTable.getItems();
+                providertoedit.criteries=EditProviderCriteriaTable.getItems();
+                providertoedit.products=EditProviderProductTable.getItems();
+                dataaccessor.updateProvider(providertoedit);
+                ProvidersTable.setItems(dataaccessor.getAllProviders());
+                clearSelection("ProvidersPane");
+                showPane(ProvidersPane,ProvidersBtn);
+            }
+        }
     }
 
     @FXML
     private void EditProviderGetBack(ActionEvent event) {
+        clearSelection("ProvidersPane");
+        ProvidersTable.setItems(dataaccessor.getAllProviders());
         showPane(ProvidersPane,ProvidersBtn);
     }
 
@@ -913,9 +1076,14 @@ public class MainsceneController implements Initializable {
     @FXML
     private void DeleteProviderFromProviders(ActionEvent event) {
         dataaccessor.deleteProvider(providertoedit);
+        clearSelection("ProvidersPane");
+        ProvidersTable.setItems(dataaccessor.getAllProviders());
+        showPane(ProvidersPane,ProvidersBtn);
     }
     @FXML
     private void DeleteProviderGetBack(ActionEvent event) {
+        clearSelection("ProvidersPane");
+        ProvidersTable.setItems(dataaccessor.getAllProviders());
         showPane(ProvidersPane,ProvidersBtn);
     }
     
@@ -943,27 +1111,130 @@ public class MainsceneController implements Initializable {
     private void PropertiesClearSelection(MouseEvent event) {
     }
     
-
-
+    // Функции Choose Provider Pane =============================
+    @FXML
+    private void showChooseProviders(ActionEvent event) {
+        Phase1OrganisationAddressTable.setItems(dataaccessor.getOrganisation().addresses);
+        showPane(ChoosePhase1Pane,ChooseProviderBtn);
+    }
+    
+    @FXML
+    private void Phase1SelectAddress(MouseEvent event) {
+        organisationaddress = Phase1OrganisationAddressTable.getSelectionModel().getSelectedItem();
+        if (organisationaddress!=null)
+            Phase1GetForwardBtn.setDisable(false);
+    }
 
     @FXML
     private void Phase1GetForward(ActionEvent event) {
-    }
-
-    @FXML
-    private void Phase2GetBack(ActionEvent event) {
-    }
-
-    @FXML
-    private void Phase2GetForward(ActionEvent event) {
-    }
-
-    @FXML
-    private void Phase1SelectProduct(MouseEvent event) {
+        Phase2ProductTable.setItems(dataaccessor.getAllProducts());
+        showPane(ChoosePhase2Pane,ChooseProviderBtn);
     }
 
     @FXML
     private void Phase1ClearSelection(MouseEvent event) {
+        clearSelection("ChoosePhase1Pane");
+    }
+
+    @FXML
+    private void Phase2SelectProduct(MouseEvent event) {
+        selectedproduct = Phase2ProductTable.getSelectionModel().getSelectedItem();
+        if (selectedproduct!=null)
+            Phase2GetForwardBtn.setDisable(false);
+    }
+
+    @FXML
+    private void Phase2GetForward(ActionEvent event) {
+        providerswithproduct = dataaccessor.getAllProviders(selectedproduct);
+        for (Provider p:providerswithproduct) {
+            int rating =0;
+            for (CriteriaToProvider ctp:p.criteries) {
+                int valctp=0;
+                if (ctp.getValue().equals("да")||ctp.getValue().equals("нет")) {
+                    if (ctp.getValue().equals("да"))
+                        valctp=10;
+                    else
+                        valctp=0;
+                }
+                else 
+                    valctp = Integer.parseInt(ctp.getValue());
+                rating+=ctp.getCriteria().getImportance()*valctp;
+            }
+            p.setRating(rating);
+        }
+        Phase3ProviderTable.setItems(providerswithproduct);
+        showPane(ChoosePhase3Pane,ChooseProviderBtn);
+    }
+
+    @FXML
+    private void Phase2GetBack(ActionEvent event) {
+        clearSelection("ChoosePhase1Pane");
+        showPane(ChoosePhase1Pane,ChooseProviderBtn);
+    }
+
+    @FXML
+    private void Phase2ClearSelection(MouseEvent event) {
+        clearSelection("ChoosePhase2Pane");
+    }
+
+    @FXML
+    private void Phase3GetBack(ActionEvent event) {
+        clearSelection("ChoosePhase2Pane");
+        showPane(ChoosePhase2Pane,ChooseProviderBtn);
+    }
+
+    @FXML
+    private void Phase3GetForward(ActionEvent event) {
+        showPane(ChoosePhase4Pane,ChooseProviderBtn);
+    }
+    
+    @FXML
+    private void Phase3showTimeInformation(ActionEvent event) {
+        showMessage("На данный момент прогноз поддерживается только до 6 дней"
+                + "\n Если указать больше 6 дней, прогноз свыше 6 дней учитываться не будет!");
+    }
+    @FXML
+    private void Phase3ImportanceRatingChanged(ActionEvent event) {
+        double val = 1 - Double.parseDouble(Phase3ImportanceRatingEdit.getValue());
+        Phase3ImportanceWayEdit.setValue(String.format("%.1f%n", val));
+    }
+
+    @FXML
+    private void Phase3ImportanceWayChanged(ActionEvent event) {
+        double val = 1 - Double.parseDouble(Phase3ImportanceWayEdit.getValue());
+        Phase3ImportanceRatingEdit.setValue(String.format("%.1f%n", val));
+    }
+    @FXML
+    private void Phase4GetBack(ActionEvent event) {
+        showPane(ChoosePhase3Pane,ChooseProviderBtn);
+    }
+
+    @FXML
+    private void Phase4GetForward(ActionEvent event) {
+        showPane(ChoosePhase5Pane,ChooseProviderBtn);
+    }
+
+    @FXML
+    private void Phase4SelectOtherWay(MouseEvent event) {
+    }
+
+    @FXML
+    private void Phase4SelectBestWay(MouseEvent event) {
+    }
+
+    @FXML
+    private void Phase4ClearSelection(MouseEvent event) {
+        clearSelection("ChoosePhase4Pane");
+    }
+
+    @FXML
+    private void Phase5GetBack(ActionEvent event) {
+        clearSelection("ChoosePhase4Pane");
+        showPane(ChoosePhase4Pane,ChooseProviderBtn);
+    }
+
+    @FXML
+    private void Phase5GetGPXFile(ActionEvent event) {
     }
 
     // Функции SavedSamples Pane =============================
@@ -971,6 +1242,12 @@ public class MainsceneController implements Initializable {
     private void showSavedSamples(ActionEvent event) {
         showPane(SavedSamplesPane, SavedSamplesBtn);
     }
+
+
+
+
+
+
 
 
     

@@ -104,11 +104,26 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>bintray</name>
+            <url>http://jcenter.bintray.com</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.15</version>
+        </dependency>
+        <dependency>
+            <groupId>com.byteowls</groupId>
+            <artifactId>jopencage</artifactId>
+            <version>1.2.1</version>
         </dependency>
     </dependencies>
 </project>
