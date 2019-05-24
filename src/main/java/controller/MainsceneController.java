@@ -5,6 +5,9 @@
  */
 package controller;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
@@ -282,9 +285,9 @@ public class MainsceneController implements Initializable {
     @FXML
     private TextField Phase3MaxTimeEdit;
     @FXML
-    private ComboBox<String> Phase3ImportanceWayEdit;
+    private ComboBox<Integer> Phase3ImportanceWayEdit;
     @FXML
-    private ComboBox<String> Phase3ImportanceRatingEdit;
+    private ComboBox<Integer> Phase3ImportanceRatingEdit;
     
     //Choose Provider Phase4
     @FXML
@@ -292,31 +295,33 @@ public class MainsceneController implements Initializable {
     @FXML
     private TextArea Phase4LogEdit;
     @FXML
-    private TableView<?> Phase4OtherWayTable;
+    private TableView<Way> Phase4OtherWayTable;
     @FXML
-    private TableColumn<?, ?> Phase4OtherProviderColumn;
+    private TableColumn<Way, String> Phase4OtherProviderColumn;
     @FXML
-    private TableColumn<?, ?> Phase4OtherAddressColumn;
+    private TableColumn<Way, String> Phase4OtherAddressColumn;
     @FXML
-    private TableColumn<?, ?> Phase4OtherWayLengthColumn;
+    private TableColumn<Way, Double> Phase4OtherWayLengthColumn;
     @FXML
-    private TableColumn<?, ?> Phase4OtherWayTime;
+    private TableColumn<Way, Double> Phase4OtherWayTime;
     @FXML
-    private TableColumn<?, ?> Phase4OtherWayRatingColumn;
+    private TableColumn<Way, Double> Phase4OtherWayRatingColumn;
     @FXML
-    private TableView<?> Phase4BestWayTable;
+    private TableView<Way> Phase4BestWayTable;
     @FXML
-    private TableColumn<?, ?> Phase4BestProviderColumn;
+    private TableColumn<Way, String> Phase4BestProviderColumn;
     @FXML
-    private TableColumn<?, ?> Phase4BestAddressColumn;
+    private TableColumn<Way, String> Phase4BestAddressColumn;
     @FXML
-    private TableColumn<?, ?> Phase4BestWayLengthColumn;
+    private TableColumn<Way, Double> Phase4BestWayLengthColumn;
     @FXML
-    private TableColumn<?, ?> Phase4BestWayTime;
+    private TableColumn<Way, Double> Phase4BestWayTime;
     @FXML
-    private TableColumn<?, ?> Phase4BestWayRatingColumn;
+    private TableColumn<Way, Double> Phase4BestWayRatingColumn;
     @FXML
     private Button Phase4GetForwardBtn;
+    @FXML
+    private Button Phase4SaveToSamplesBtn;
     
     //Choose Provider Phase5
     @FXML
@@ -403,10 +408,15 @@ public class MainsceneController implements Initializable {
     int iteratorId;
     // Сделано на случай, если будут появлятся несколько экзепшенов. Для удобства.
     int emessageid;
+    //----------------------------------
     // Переменные выбора поставщиков
     Product selectedproduct;
-    ObservableList<Provider> providerswithproduct;
+    ObservableList<Provider> providerwithproduct, providersortedbyrating;
     Address organisationaddress;
+    int maxtime;
+    Way selectedway;
+    int importanceway, importancerating;
+    
 
     
 
@@ -540,9 +550,24 @@ public class MainsceneController implements Initializable {
                 Phase1GetForwardBtn.setDisable(true);
                 organisationaddress=null;
                 break;
+            case "ChoosePhase2Pane":
+                Phase2ProductTable.getSelectionModel().clearSelection();
+                Phase2GetForwardBtn.setDisable(true);
+                break;
+            case "ChoosePhase4Pane":
+                Phase4BestWayTable.getSelectionModel().clearSelection();
+                Phase4OtherWayTable.getSelectionModel().clearSelection();
+                Phase4GetForwardBtn.setDisable(true);
+                break;
         }
     }
+    private void Phase4Log(String s) {
+        Phase4LogEdit.appendText(s+"\n");
+    }
     
+    private void Phase4ClearLog() {
+        Phase4LogEdit.clear();
+    }
     /**
      * Функция инициализации
      * @param url
@@ -554,12 +579,23 @@ public class MainsceneController implements Initializable {
         Context.getInstance().setMainformController(this);
         // Отображаем форму и вызываем конструктор соединения и кастомных переменных
         dataaccessor = new DataAccessor();
-        providerswithproduct = FXCollections.observableArrayList();
-        providertoedit = null;
-        organisation = null;
+        //Индикатор error message
+        emessageid=0;
+        // ПАНО РЕДАКТИРОВАНИЯ\УДАЛЕНИЯ\ДОБАВЛЕНИЯ поставщика
+                providertoedit = null;
+        // ПАНО ОРГАНИЗАЦИИ
+                organisation = null;
+                
+        providerwithproduct = FXCollections.observableArrayList();
+        providersortedbyrating = FXCollections.observableArrayList();
+        maxtime=8760;
+        
+        importanceway = 5; importancerating = 5;
+        
+        
         selectedproduct=null;
         organisationaddress=null;
-        emessageid=0;
+        
         showStartPane();
         
         // Подготавливаем таблицы к выгрузке данных
@@ -607,14 +643,25 @@ public class MainsceneController implements Initializable {
         Phase2ProductNameColumn.setCellValueFactory(new PropertyValueFactory("title"));
         Phase3ProviderNameColumn.setCellValueFactory(new PropertyValueFactory("title"));
         Phase3ProviderRatingColumn.setCellValueFactory(new PropertyValueFactory("rating"));
-        ObservableList<String> vals = FXCollections.observableArrayList();
+        ObservableList<Integer> vals = FXCollections.observableArrayList();
         for(int i=1;i<10;i++) {
-            vals.add("0."+i);
+            vals.add(i);
         }
         Phase3ImportanceWayEdit.setItems(vals);
         Phase3ImportanceRatingEdit.setItems(vals);
-        Phase3ImportanceRatingEdit.setValue("0.5");
-        Phase3ImportanceWayEdit.setValue("0.5");
+        Phase3ImportanceRatingEdit.setValue(importancerating);
+        Phase3ImportanceWayEdit.setValue(importanceway);
+        Phase4BestProviderColumn.setCellValueFactory(new PropertyValueFactory("provider"));
+        Phase4BestAddressColumn.setCellValueFactory(new PropertyValueFactory("startaddr"));
+        Phase4BestWayLengthColumn.setCellValueFactory(new PropertyValueFactory("length"));
+        Phase4BestWayRatingColumn.setCellValueFactory(new PropertyValueFactory("summaryrating"));
+        Phase4BestWayTime.setCellValueFactory(new PropertyValueFactory("correctedtime"));
+        Phase4OtherProviderColumn.setCellValueFactory(new PropertyValueFactory("provider"));
+        Phase4OtherAddressColumn.setCellValueFactory(new PropertyValueFactory("startaddr"));
+        Phase4OtherWayLengthColumn.setCellValueFactory(new PropertyValueFactory("length"));
+        Phase4OtherWayRatingColumn.setCellValueFactory(new PropertyValueFactory("summaryrating"));
+        Phase4OtherWayTime.setCellValueFactory(new PropertyValueFactory("correctedtime"));
+        
         
  
     }
@@ -1145,8 +1192,8 @@ public class MainsceneController implements Initializable {
 
     @FXML
     private void Phase2GetForward(ActionEvent event) {
-        providerswithproduct = dataaccessor.getAllProviders(selectedproduct);
-        for (Provider p:providerswithproduct) {
+        providerwithproduct = dataaccessor.getAllProviders(selectedproduct);
+        for (Provider p:providerwithproduct) {
             int rating =0;
             for (CriteriaToProvider ctp:p.criteries) {
                 int valctp=0;
@@ -1162,7 +1209,7 @@ public class MainsceneController implements Initializable {
             }
             p.setRating(rating);
         }
-        Phase3ProviderTable.setItems(providerswithproduct);
+        Phase3ProviderTable.setItems(providerwithproduct);
         showPane(ChoosePhase3Pane,ChooseProviderBtn);
     }
 
@@ -1184,8 +1231,134 @@ public class MainsceneController implements Initializable {
     }
 
     @FXML
-    private void Phase3GetForward(ActionEvent event) {
+    private void Phase3GetForward(ActionEvent event) throws FileNotFoundException {
         showPane(ChoosePhase4Pane,ChooseProviderBtn);
+        maxtime = Integer.parseInt(Phase3MaxTimeEdit.getText())*24;
+        importanceway = Phase3ImportanceWayEdit.getValue();
+        importancerating = Phase3ImportanceRatingEdit.getValue();
+        int providerrating = Integer.parseInt(Phase3MinProviderRatingEdit.getText());
+        providersortedbyrating.clear();
+        // Сортируем по рейтингу поставщика
+        for (Provider provider:providerwithproduct) {
+            if (provider.getRating()>=providerrating) {
+                providersortedbyrating.add(provider);
+            }
+        }
+        // Считываем пути
+        ObservableList<Way> unsortedways = FXCollections.observableArrayList();
+        for (Provider provider:providersortedbyrating) {
+            for (Address provideraddress:provider.addresses) {
+                String request = "https://route.api.here.com/routing/7.2/calculateroute.json?"+
+                    "waypoint0="+provideraddress.getLatitude()+","+provideraddress.getLongitude()+
+                    "&waypoint1="+organisationaddress.getLatitude()+","+organisationaddress.getLongitude()+
+                    "&mode=fastest;truck"+
+                    "&routeattributes=sh"+
+                    "&alternatives=4"+
+                    "&app_id="+dataaccessor.getHereappkey_ID()+""+
+                    "&app_code="+dataaccessor.getHereappkey_Code()+"";
+                Phase4Log("отправка запроса: "+request);
+                // Считываем основную информацию из json
+                ObservableList<Way> ways = dataaccessor.getRoutes(request);
+                // Дополняем под конкретного поставщика и конкретный конечный адрес
+                for (Way way:ways) {
+                    way.setProvider(provider);
+                    way.setEndaddr(organisationaddress);
+                    way.setStartaddr(provideraddress);
+                }
+                unsortedways.addAll(ways);
+            }
+        }
+        Phase4Log("===");
+        Phase4Log("Список найденных путей:");
+        for (Way way:unsortedways) {
+            Phase4Log("===");
+            Phase4Log("Поставщик: "+way.getProvider().toString());
+            Phase4Log("Адрес: "+way.getStartaddr().toString());
+            Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
+            Phase4Log("===");
+        }
+        // Сортируем пути по максимальному времени
+        ObservableList<Way> uncorrectedways = FXCollections.observableArrayList();
+        for (Way way:unsortedways) {
+            if(way.getBasetime()<maxtime) {
+                uncorrectedways.add(way);
+            }
+        }
+        Phase4Log("Список сортированных по времемни путей:");
+        for (Way way:uncorrectedways) {
+            Phase4Log("===");
+            Phase4Log("Поставщик: "+way.getProvider().toString());
+            Phase4Log("Адрес: "+way.getStartaddr().toString());
+            Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
+            Phase4Log("===");
+        }
+        // Корректируем пути по погоде
+        ObservableList<Way> correctedways = dataaccessor.correctRoutes(uncorrectedways);
+        Phase4Log("Список сортированных по погоде путей:");
+        for (Way way:correctedways) {
+            Phase4Log("===");
+            Phase4Log("Поставщик: "+way.getProvider().toString());
+            Phase4Log("Адрес: "+way.getStartaddr().toString());
+            Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
+            Phase4Log("Средний балл опасности на дороге: "+way.getAvgdanger()+" , Погодные условия на пути: "+way.getWeatheronway());
+            Phase4Log("===");
+        }
+        // Сортируем по максимальному времени
+        ObservableList<Way> summaryways = FXCollections.observableArrayList();
+        for (Way way: correctedways) {
+            if(way.getCorrectedtime()<maxtime) {
+                summaryways.add(way);
+            }
+        }
+        Phase4Log("Список сортированных по времемни путей:");
+        for (Way way:summaryways) {
+            Phase4Log("===");
+            Phase4Log("Поставщик: "+way.getProvider().toString());
+            Phase4Log("Адрес: "+way.getStartaddr().toString());
+            Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
+            Phase4Log("Средний балл опасности на дороге: "+way.getAvgdanger()+" , Погодные условия на пути: "+way.getWeatheronway());
+            Phase4Log("===");
+        }
+        // Считаем общий рейтинг пути
+        for (Way way:summaryways) {
+            double currentproviderrating = way.getProvider().getRating()/100.0;
+            // Отбираем пути по принципу меньше, равно максимуму быть не может!
+            //Т.е. значение ожидаемо больше 0. Значения 0 быть не может тоже.
+            double dividetime = way.getCorrectedtime()/maxtime;
+            double currentwayrating = 1 - dividetime;
+            double summaryrating;
+            summaryrating = (currentproviderrating*importancerating) + (currentwayrating*importanceway);
+            way.setSummaryrating(summaryrating);  
+        }
+        // Ищем лучший путь с максимальным рейтингом
+        Way bestratingway = new Way();
+        bestratingway.setSummaryrating(0);
+        for (Way way:summaryways) {
+            if (way.getSummaryrating()>=bestratingway.getSummaryrating()) {
+                if (way.getSummaryrating()==bestratingway.getSummaryrating()) {
+                    if (way.getCorrectedtime()<bestratingway.getCorrectedtime())
+                        bestratingway=way;
+                }
+                else {
+                    bestratingway=way;
+                }
+            }
+        }
+        Phase4Log("Лучший путь:");
+        Phase4Log("Поставщик: "+bestratingway.getProvider().toString());
+        Phase4Log("Адрес: "+bestratingway.getStartaddr().toString());
+        Phase4Log("Протяженность: "+bestratingway.getLength()+" км, Время в пути: "+bestratingway.getBasetime()+" ч, Средняя скорость: "+bestratingway.getAvgspeed()+" км/ч");
+        Phase4Log("Средний балл опасности на дороге: "+bestratingway.getAvgdanger()+" , Погодные условия на пути: "+bestratingway.getWeatheronway());
+        Phase4Log("Общий рейтинг пути:"+bestratingway.getSummaryrating());
+        ObservableList<Way> bestway = FXCollections.observableArrayList();
+        bestway.add(bestratingway);
+        // Формируем список остальных путей без данного пути
+        ObservableList<Way> otherways = summaryways;
+        // Удаляем из списка других путей лучший путь
+        otherways.remove(bestratingway);
+        Phase4BestWayTable.setItems(bestway);
+        Phase4OtherWayTable.setItems(otherways);
+        
     }
     
     @FXML
@@ -1195,15 +1368,16 @@ public class MainsceneController implements Initializable {
     }
     @FXML
     private void Phase3ImportanceRatingChanged(ActionEvent event) {
-        double val = 1 - Double.parseDouble(Phase3ImportanceRatingEdit.getValue());
-        Phase3ImportanceWayEdit.setValue(String.format("%.1f%n", val));
+        int val = 10 - Phase3ImportanceRatingEdit.getValue();
+        Phase3ImportanceWayEdit.setValue(val);
     }
 
     @FXML
     private void Phase3ImportanceWayChanged(ActionEvent event) {
-        double val = 1 - Double.parseDouble(Phase3ImportanceWayEdit.getValue());
-        Phase3ImportanceRatingEdit.setValue(String.format("%.1f%n", val));
+        int val = 10 - Phase3ImportanceWayEdit.getValue();
+        Phase3ImportanceRatingEdit.setValue(val);
     }
+    
     @FXML
     private void Phase4GetBack(ActionEvent event) {
         showPane(ChoosePhase3Pane,ChooseProviderBtn);
@@ -1211,15 +1385,44 @@ public class MainsceneController implements Initializable {
 
     @FXML
     private void Phase4GetForward(ActionEvent event) {
+        Phase5AverageDangerEdit.setText("1");
+        Phase5ProviderEdit.setText(selectedway.getProvider().toString());
+        Phase5EndEdit.setText(selectedway.getEndaddr().toString());
+        Phase5StartEdit.setText(selectedway.getStartaddr().toString());
+        double wayrate = (1 - (selectedway.getCorrectedtime()/maxtime))*importanceway;
+        Phase5RatingWayEdit.setText(String.format("%.3f%n", wayrate));
+        double provrate = (selectedway.getProvider().getRating()/100.0)*importancerating;
+        Phase5RatingProviderEdit.setText(String.format("%.3f%n", provrate));
+        Phase5RatingCommonEdit.setText(String.format("%.3f%n",selectedway.getSummaryrating()));
+        Phase5AVGTimeEdit.setText(selectedway.getCorrectedtime()+" часов");
+        Phase5LengthEdit.setText(selectedway.getLength()+" км.");
+        Phase5ProductEdit.setText(selectedproduct.getTitle());
         showPane(ChoosePhase5Pane,ChooseProviderBtn);
     }
 
     @FXML
     private void Phase4SelectOtherWay(MouseEvent event) {
+        Phase4BestWayTable.getSelectionModel().clearSelection();
+        selectedway = Phase4OtherWayTable.getSelectionModel().getSelectedItem();
+        if (selectedway!=null) {
+            Phase4GetForwardBtn.setDisable(false);
+        }
+        else {Phase4GetForwardBtn.setDisable(true);}
     }
 
     @FXML
     private void Phase4SelectBestWay(MouseEvent event) {
+        Phase4OtherWayTable.getSelectionModel().clearSelection();
+        selectedway = Phase4BestWayTable.getSelectionModel().getSelectedItem();
+        if (selectedway!=null) {
+            Phase4GetForwardBtn.setDisable(false);
+        }
+        else {Phase4GetForwardBtn.setDisable(true);}
+    }
+     @FXML
+    private void Phase4SaveToSamples(ActionEvent event) {
+        Phase4SaveToSamplesBtn.setText("Выборка сохранена");
+        Phase4SaveToSamplesBtn.setDisable(true);
     }
 
     @FXML
@@ -1242,6 +1445,8 @@ public class MainsceneController implements Initializable {
     private void showSavedSamples(ActionEvent event) {
         showPane(SavedSamplesPane, SavedSamplesBtn);
     }
+
+   
 
 
 

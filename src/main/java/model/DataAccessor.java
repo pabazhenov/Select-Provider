@@ -9,14 +9,41 @@ import com.byteowls.jopencage.JOpenCageGeocoder;
 import com.byteowls.jopencage.model.JOpenCageForwardRequest;
 import com.byteowls.jopencage.model.JOpenCageLatLng;
 import com.byteowls.jopencage.model.JOpenCageResponse;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import controller.MainsceneController;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import JsonPOJO.*;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import org.apache.http.HttpEntity;
+import static org.apache.http.HttpHeaders.USER_AGENT;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  *
@@ -27,11 +54,27 @@ public class DataAccessor {
     public String errorcode;
     private final MainsceneController mainform;
     private final JOpenCageGeocoder jOpenCageGeocoder;
+    private String hereappkey_id;
+    private String hereappkey_code;
     public DataAccessor(){
         connection = null;
         errorcode="";
         mainform = Context.getInstance().getMainformController();
         jOpenCageGeocoder = new JOpenCageGeocoder("8800b41d55de4774bea5723fd22aa2b1");
+        hereappkey_id = "E887pM085rdrBuQgmyUD";
+        hereappkey_code = "mUJzRgDsyjWIu1QJIie9Mw";
+    }
+    public String getHereappkey_ID(){
+        return hereappkey_id;
+    }
+    public void setHereappkey_ID(String s) {
+        hereappkey_id = s;
+    }
+    public String getHereappkey_Code(){
+        return hereappkey_code;
+    }
+    public void setHereappkey_Code(String s) {
+        hereappkey_code = s;
     }
     public boolean isConnected(){
         return connection!=null;
@@ -667,5 +710,45 @@ public class DataAccessor {
             mainform.showMessage(ex.toString());
         }
         return tempcriteries;
+    }
+    
+    public ObservableList<Way> correctRoutes(ObservableList<Way> uncorrectedways) {
+        ObservableList<Way> correctedways = FXCollections.observableArrayList();
+        for (Way way:uncorrectedways) {
+            way.setCorrectedtime(way.getBasetime());
+            correctedways.add(way);
+        }
+        return correctedways;
+    }
+    public ObservableList<Way> getRoutes(String request) {
+        ObservableList<Way> ways = FXCollections.observableArrayList();
+        try {
+            DefaultHttpClient httpClient = new DefaultHttpClient();
+                    HttpGet httpGet = new HttpGet (request);
+                    HttpResponse httpResponse = httpClient.execute(httpGet);
+                    HttpEntity httpEntity = httpResponse.getEntity();
+                    InputStream is = httpEntity.getContent();
+            JsonReader br = new JsonReader(new InputStreamReader(is, "UTF-8"));
+            JsonRoutePOJO resp = new Gson().fromJson(br, JsonRoutePOJO.class);
+            ArrayList<Route> gottenroutes = resp.getJsonroot().getRoute();
+            for (Route route: gottenroutes) {
+                Way way = new Way();
+                // Путь 
+                ObservableList<String> shape = FXCollections.observableArrayList(route.getShape());
+                way.setShape(shape);
+                double basetime = route.getSummary().getBaseTime()/3600;
+                way.setBasetime(basetime);
+                double length = route.getSummary().getDistance()/1000;
+                way.setLength(length);
+                way.setAvgspeed(way.getLength()/way.getBasetime());
+                
+                ways.add(way);
+            }
+        } catch (MalformedURLException ex) {
+            mainform.showMessage(ex.toString());
+        } catch (IOException ex) {
+            mainform.showMessage(ex.toString());
+        }
+        return ways;
     }
 }

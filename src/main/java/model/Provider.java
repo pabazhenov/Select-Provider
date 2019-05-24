@@ -29,6 +29,11 @@ public class Provider {
     public ObservableList<ProductToProvider> products;
     public ObservableList<CriteriaToProvider> criteries;
     
+    @Override
+    public String toString() {
+        return title.get();
+    }
+    
     public void setTitle(String NameValue) {
         title.set(NameValue);
     }

@@ -215,7 +215,7 @@
                               <Button layoutX="217.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase2GetBack" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Назад" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="233.0" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane fx:id="ChoosePhase3Pane" prefHeight="591.0" prefWidth="745.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <AnchorPane fx:id="ChoosePhase3Pane" prefHeight="591.0" prefWidth="745.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
                               <Label layoutX="231.0" layoutY="14.0" prefHeight="25.0" prefWidth="284.0" styleClass="settingslabel" text="Поставщики с выбранным продуктом">
                                  <font>
@@ -259,15 +259,15 @@
                               <ComboBox fx:id="Phase3ImportanceWayEdit" layoutX="353.0" layoutY="502.0" onAction="#Phase3ImportanceWayChanged" prefWidth="150.0" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane fx:id="ChoosePhase4Pane" onMouseClicked="#Phase4ClearSelection" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <AnchorPane fx:id="ChoosePhase4Pane" onMouseClicked="#Phase4ClearSelection" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
                               <Label layoutX="231.0" layoutY="14.0" prefHeight="25.0" prefWidth="284.0" styleClass="settingslabel" text="Расчет путей">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
                               </Label>
-                              <Button layoutX="253.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase4GetBack" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Назад" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="233.0" />
-                              <Button fx:id="Phase4GetForwardBtn" disable="true" layoutX="433.0" layoutY="550.0" mnemonicParsing="false" onAction="#Phase4GetForward" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Далее" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="233.0" />
+                              <Button layoutX="196.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase4GetBack" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Назад" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="196.0" />
+                              <Button fx:id="Phase4GetForwardBtn" disable="true" layoutX="324.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase4GetForward" prefHeight="31.0" prefWidth="120.0" styleClass="controlbutton" text="Далее" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="301.0" />
                               <SplitPane dividerPositions="0.008281573498964804" layoutY="45.0" orientation="VERTICAL" prefHeight="485.0" prefWidth="745.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="45.0">
                                 <items>
                                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="379.0" prefWidth="743.0">
@@ -314,6 +314,7 @@
                                     </AnchorPane>
                                 </items>
                               </SplitPane>
+                              <Button fx:id="Phase4SaveToSamplesBtn" layoutX="468.0" layoutY="541.0" mnemonicParsing="false" onAction="#Phase4SaveToSamples" prefHeight="31.0" prefWidth="155.0" styleClass="controlbutton" text="Сохранить выборку" />
                            </children>
                         </AnchorPane>
                         <AnchorPane fx:id="ChoosePhase5Pane" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -359,9 +360,6 @@
                               <TextField fx:id="Phase5RatingProviderEdit" editable="false" layoutX="371.0" layoutY="324.0" prefHeight="26.0" prefWidth="112.0" />
                               <TextField fx:id="Phase5RatingCommonEdit" editable="false" layoutX="371.0" layoutY="386.0" prefHeight="26.0" prefWidth="112.0" />
                               <TextField fx:id="Phase5RatingWayEdit" editable="false" layoutX="371.0" layoutY="355.0" prefHeight="26.0" prefWidth="112.0" />
-                              <Label layoutX="487.0" layoutY="360.0" text="макс. знач. : 1" />
-                              <Label layoutX="487.0" layoutY="391.0" text="макс. знач. : 1" />
-                              <Label layoutX="487.0" layoutY="329.0" text="макс. знач. : 1" />
                               <TextField fx:id="Phase5AverageDangerEdit" editable="false" layoutX="431.0" layoutY="459.0" prefHeight="26.0" prefWidth="56.0" />
                            </children>
                         </AnchorPane>

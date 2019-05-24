@@ -23,6 +23,10 @@ public class Address {
     private final StringProperty longitude;
     private final StringProperty latitude;
     
+    @Override
+    public String toString() {
+        return ""+index.get()+","+region.get()+","+city.get();
+    }
     public void setIndex(String IndexValue) {
         index.set(IndexValue);
     }
