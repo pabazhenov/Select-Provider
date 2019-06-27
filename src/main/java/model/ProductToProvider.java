@@ -14,7 +14,7 @@ import javafx.beans.property.StringProperty;
  */
 public class ProductToProvider {
     private Product product;
-    private StringProperty isprovide;
+    private final StringProperty isprovide;
     
     public ProductToProvider(){
         this.product = new Product();

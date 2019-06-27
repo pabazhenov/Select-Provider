@@ -10,37 +10,26 @@ import com.byteowls.jopencage.model.JOpenCageForwardRequest;
 import com.byteowls.jopencage.model.JOpenCageLatLng;
 import com.byteowls.jopencage.model.JOpenCageResponse;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import controller.MainsceneController;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import JsonPOJO.*;
 import java.io.InputStream;
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import org.apache.http.HttpEntity;
-import static org.apache.http.HttpHeaders.USER_AGENT;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -711,11 +700,240 @@ public class DataAccessor {
         }
         return tempcriteries;
     }
+    public ObservableList<Adjustment> getAllAdjustment() {
+        ObservableList<Adjustment> tempadjustment = FXCollections.observableArrayList();
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query="Select * from Adjustment";
+            ResultSet rs;
+            rs = stmnt.executeQuery(query);
+            while (rs.next()) {
+                Adjustment tempadj = new Adjustment();
+                tempadj.setDangerlevel(rs.getInt("danger_level"));
+                tempadj.setId(rs.getInt("id"));
+                tempadj.setPercentageSpeed(rs.getInt("percentage_speed"));
+                tempadjustment.add(tempadj);
+            }
+            rs.close();
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
+        return tempadjustment;
+    }
+    public void saveCriteria(Criteria crit){
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query = "UPDATE `Criteria` SET `importance` = '"+
+                    crit.getImportance()+"' WHERE `Criteria`.`id` = "+crit.getId()+"";
+            stmnt.execute(query);
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
+    }
+    public void saveAdjustment(Adjustment adj) {
+        try {
+            Statement stmnt;
+            stmnt = connection.createStatement();
+            String query = "UPDATE `Adjustment` SET `percentage_speed` = '"+
+                    adj.getPercentagespeed()+"' WHERE `Adjustment`.`id` = "+adj.getId()+"";
+            stmnt.execute(query);
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
+    
+    }
     
     public ObservableList<Way> correctRoutes(ObservableList<Way> uncorrectedways) {
         ObservableList<Way> correctedways = FXCollections.observableArrayList();
+        LocalDateTime today = LocalDateTime.now();
+        // Считываем тек. месяц для получения погоды
+        int month = today.getMonthValue();
+        // Задаем размер участка дороги в км (через какой промежуток дороги считывать погоду)
+        int partroadsize = 50;
+        // Получаем идеальную погоду для текущего месяца
+        Weather perfectweather = new Weather();
+        try {
+            Statement stmnt = connection.createStatement();
+            String query="Select w.id w_id,w.skyinfo, w.temperature, w.humidity, "
+                        + "w.precipitation, w.windspeed, w.description, "
+                        + "a.id a_id, a.danger_level, a.percentage_speed "
+                        + "from Weather w, Adjustment a "
+                        + " where w.id_adjustment=a.id and "
+                        + "a.danger_level=1 and "
+                        + "w.months like '%"+month+"%'";
+            ResultSet rs = stmnt.executeQuery(query);
+            while (rs.next()) {
+                Adjustment adj = new Adjustment();
+                adj.setDangerlevel(rs.getInt("danger_level"));
+                adj.setId(rs.getInt("a_id"));
+                adj.setPercentageSpeed(rs.getInt("percentage_speed"));
+                perfectweather.setAdjustment(adj);
+                perfectweather.setTemperature(rs.getInt("temperature"));
+                perfectweather.setSkyinfo(rs.getInt("skyinfo"));
+                perfectweather.setWindspeed(rs.getInt("windspeed"));
+                perfectweather.setPrecipitation(rs.getInt("precipitation"));
+                perfectweather.setHumidity(rs.getInt("humidity"));
+                perfectweather.setId(rs.getInt("w_id"));
+                perfectweather.setDescription(rs.getString("description"));
+            }
+            rs.close();
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
+        // Считываем всю погоду
+        ObservableList<Weather> weather = FXCollections.observableArrayList();
+        try {
+            Statement stmnt = connection.createStatement();
+            String query="Select w.id w_id,w.skyinfo, w.temperature, w.humidity, "
+                        + "w.precipitation, w.windspeed, w.description, "
+                        + "a.id a_id, a.danger_level, a.percentage_speed "
+                        + "from Weather w, Adjustment a "
+                        + " where w.id_adjustment=a.id and "
+                        + "w.months like '%"+month+"%'";
+            ResultSet rs = stmnt.executeQuery(query);
+            while (rs.next()) {
+                Weather tempweather = new Weather();
+                Adjustment adj = new Adjustment();
+                adj.setDangerlevel(rs.getInt("danger_level"));
+                adj.setId(rs.getInt("a_id"));
+                adj.setPercentageSpeed(rs.getInt("percentage_speed"));
+                tempweather.setAdjustment(adj);
+                tempweather.setTemperature(rs.getInt("temperature"));
+                tempweather.setSkyinfo(rs.getInt("skyinfo"));
+                tempweather.setWindspeed(rs.getInt("windspeed"));
+                tempweather.setPrecipitation(rs.getInt("precipitation"));
+                tempweather.setHumidity(rs.getInt("humidity"));
+                tempweather.setId(rs.getInt("w_id"));
+                tempweather.setDescription(rs.getString("description"));
+                weather.add(tempweather);
+            }
+            rs.close();
+            stmnt.close();
+        } catch (SQLException ex) {
+            mainform.showMessage(ex.toString());
+        }
+        // вычисляем dWeather для каждого погодного условия
+        for (Weather w:weather) {
+            double dh = (double)w.getHumidity()/perfectweather.getHumidity();
+            double dp = w.getPrecipitation()/perfectweather.getPrecipitation();
+            double dwind = w.getWindspeed()/perfectweather.getWindspeed();
+            double dt = w.getTemperature()/perfectweather.getTemperature();
+            double dw = dt+dwind+dp+dh;
+            w.setDeltaweather(dw);
+        }
         for (Way way:uncorrectedways) {
-            way.setCorrectedtime(way.getBasetime());
+            double currentTime=0;
+            int danger_level=0;
+            int currentTimeInt=0;
+            String weatheronway="";
+            int cordPerXKM = (int) ((way.getShape().size() / way.getLength())*partroadsize);
+            int l = (int) (way.getLength()/partroadsize);
+            for (int i=0;i<=l;i++) {
+                currentTimeInt=(int) currentTime;
+                LocalDateTime currentDate = today.plus(currentTimeInt, ChronoUnit.HOURS);
+                double currentSpeed=way.getAvgspeed();
+                String currentCords = way.getShape().get(cordPerXKM*i);
+                String[] LatLong = currentCords.split(",");
+                // приравниваем к идеальной на случай, если не найдем прогноза(!)
+                Weather currentWeather = perfectweather;
+                String request = "https://weather.cit.api.here.com/weather/1.0/"+
+                        "report.json?product=forecast_7days"+
+                        "&latitude="+LatLong[0]+
+                        "&longitude="+LatLong[1]+"&oneobservation=true"+
+                        "&app_id="+getHereappkey_ID()+""+
+                        "&app_code="+getHereappkey_Code()+"";
+                try {
+                    DefaultHttpClient httpClient = new DefaultHttpClient();
+                    HttpGet httpGet = new HttpGet (request);
+                    HttpResponse httpResponse;
+                    httpResponse = httpClient.execute(httpGet);
+                    HttpEntity httpEntity = httpResponse.getEntity();
+                    InputStream is = httpEntity.getContent();
+                    JsonReader br = new JsonReader(new InputStreamReader(is, "UTF-8"));
+                    JsonWeatherPOJO resp = new JsonWeatherPOJO();
+                    resp = new Gson().fromJson(br, JsonWeatherPOJO.class);
+                    ArrayList<forecast> gottenforecast = resp.getForecasts().getForecastLocation().getForecast();
+                    LocalDateTime beforeDate = currentDate;
+                    for (forecast f:gottenforecast) {
+                        String stringdate = f.getUtcTime();
+                        stringdate = stringdate.substring(0, 23);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH);
+                        LocalDateTime forecastdate = LocalDateTime.parse(stringdate, formatter);
+                        // Выдаст в currentWeather последнюю погоду после текущей даты\времени
+                        if (currentDate.isAfter(beforeDate)) {
+                            currentWeather.setPrecipitation(f.getPrecipitation6H());
+                            currentWeather.setTemperature(f.getTemperature());
+                            currentWeather.setWindspeed(f.getWindSpeed());
+                            currentWeather.setHumidity(f.getHumidity());
+                            currentWeather.setSkyinfo(f.getSkyInfo());
+                        }
+                        else {
+                            beforeDate=forecastdate;
+                        }
+                    }
+                } catch (IOException ex) {
+                    mainform.showMessage(ex.toString());
+                }
+               
+                // считаем дельту текущей погоды
+                double dh = (double)currentWeather.getHumidity()/perfectweather.getHumidity();
+                double dp = currentWeather.getPrecipitation()/perfectweather.getPrecipitation();
+                double dwind = currentWeather.getWindspeed()/perfectweather.getWindspeed();
+                double dt = currentWeather.getTemperature()/perfectweather.getTemperature();
+                double dw = dt+dwind+dp+dh;
+                currentWeather.setDeltaweather(dw);
+                // Ищем наиболее подходящую погоду, берем в пример текущую
+                double delta=9999;
+                Weather neededWeather = currentWeather;
+                if ((currentWeather.getSkyinfo()==6)||
+                    (currentWeather.getSkyinfo()==20)||
+                    (currentWeather.getSkyinfo()==21)||
+                    (currentWeather.getSkyinfo()==22)||
+                    (currentWeather.getSkyinfo()==23)||
+                    (currentWeather.getSkyinfo()==24)||
+                    (currentWeather.getSkyinfo()==25)||
+                    (currentWeather.getSkyinfo()==33)||
+                    (currentWeather.getSkyinfo()==34)) {
+                    for (Weather w:weather) {
+                        if (w.getSkyinfo()==currentWeather.getSkyinfo()) {
+                            double curdelta = Math.abs(currentWeather.getDeltaweather()-w.getDeltaweather());
+                            if (curdelta<delta) {
+                                delta=curdelta;
+                                neededWeather=w;
+                            }
+                        }
+                    }
+                }
+                else {
+                    for (Weather w:weather) {
+                        double curdelta = Math.abs(currentWeather.getDeltaweather()-w.getDeltaweather());
+                        if (curdelta<delta) {
+                            delta=curdelta;
+                            neededWeather=w;
+                        }    
+                    }
+                
+                }
+                // корректируем скорость, если температура превысила 30 градусов
+                if (currentWeather.getTemperature()>30) {
+                    currentSpeed=80;
+                }
+                currentTime+=(double) partroadsize*100/(currentSpeed*neededWeather.getAdjustment().getPercentagespeed());
+                danger_level+=neededWeather.getAdjustment().getDangerlevel();
+                if (!weatheronway.contains(neededWeather.getDescription())) {
+                    weatheronway+=neededWeather.getDescription()+",";
+                }
+            }
+            way.setAvgdanger(danger_level/l);
+            way.setCorrectedtime(currentTimeInt);
+            way.setAvgspeed(way.getLength()/currentTime);
+            way.setWeatheronway(weatheronway.substring(0, weatheronway.length()-1));
             correctedways.add(way);
         }
         return correctedways;

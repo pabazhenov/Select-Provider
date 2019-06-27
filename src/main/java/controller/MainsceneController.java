@@ -5,10 +5,15 @@
  */
 package controller;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.math.BigDecimal;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -47,8 +52,6 @@ public class MainsceneController implements Initializable {
     private Button ProvidersBtn;
     @FXML
     private Button ProductsBtn;
-    @FXML
-    private Button SavedSamplesBtn;
     @FXML
     private Button PropertiesBtn;
     @FXML
@@ -202,41 +205,29 @@ public class MainsceneController implements Initializable {
     @FXML
     private AnchorPane PropertiesPane;
     @FXML
-    private TableView<?> PropertiesCriteriaTable;
+    private TableView<Criteria> PropertiesCriteriaTable;
     @FXML
-    private TableColumn<?, ?> PropertiesCriteriaNameColumn;
+    private TableColumn<Criteria, String> PropertiesCriteriaNameColumn;
     @FXML
-    private TableColumn<?, ?> PropertiesCriteriaImportanceColumn;
+    private TableColumn<Criteria, Integer> PropertiesCriteriaImportanceColumn;
     @FXML
     private TextField PropertiesCriteriaNameEdit;
     @FXML
-    private TableView<?> PropertiesAdjustmentTable;
+    private TableView<Adjustment> PropertiesAdjustmentTable;
     @FXML
-    private TableColumn<?, ?> PropertiesAdjustmentValueColumn;
+    private TableColumn<Adjustment, Integer> PropertiesAdjustmentValueColumn;
     @FXML
-    private TableColumn<?, ?> PropertiesAdjustmentSpeedColumn;
+    private TableColumn<Adjustment, Integer> PropertiesAdjustmentSpeedColumn;
     @FXML
     private Button PropertiesSaveAdjustmentBtn;
     @FXML
-    private ComboBox<?> PropertiesAdjustmentSpeedEdit;
+    private ComboBox<Integer> PropertiesAdjustmentSpeedEdit;
     @FXML
     private TextField PropertiesAdjustmentDangerLevelEdit;
-    @FXML
-    private TableView<?> PropertiesWeatherDangerTable;
-    @FXML
-    private TableColumn<?, ?> PropertiesWeatherDangerNameColumn;
-    @FXML
-    private TableColumn<?, ?> PropertiesWeatherDangerLevelColumn;
     @FXML
     private Button PropertiesSaveCriteriaBtn;
     @FXML
     private TextField PropertiesCriteriaImportanceEdit;
-    @FXML
-    private TextField OpenCageGeocodeAPIKeyEdit;
-    @FXML
-    private TextField HERERouteAPIKeyEdit;
-    @FXML
-    private TextField HEREWeatherAPIKeyEdit;
     
     //MessagePane
     @FXML
@@ -288,6 +279,8 @@ public class MainsceneController implements Initializable {
     private ComboBox<Integer> Phase3ImportanceWayEdit;
     @FXML
     private ComboBox<Integer> Phase3ImportanceRatingEdit;
+    @FXML
+    private CheckBox Phase3WeatherCheck;
     
     //Choose Provider Phase4
     @FXML
@@ -320,8 +313,6 @@ public class MainsceneController implements Initializable {
     private TableColumn<Way, Double> Phase4BestWayRatingColumn;
     @FXML
     private Button Phase4GetForwardBtn;
-    @FXML
-    private Button Phase4SaveToSamplesBtn;
     
     //Choose Provider Phase5
     @FXML
@@ -392,10 +383,6 @@ public class MainsceneController implements Initializable {
     private Button OrganisationDeleteAddressBtn;
     @FXML
     private Button OrganisationAddAddressBtn;
-    
-    //SavedSamplesPane
-    @FXML
-    private AnchorPane SavedSamplesPane;
 
     // Кастомные переменные
     public DataAccessor dataaccessor;
@@ -416,13 +403,7 @@ public class MainsceneController implements Initializable {
     int maxtime;
     Way selectedway;
     int importanceway, importancerating;
-    
 
-    
-
-    
-    
-    
     // БЛОК ФУНКЦИЙ 
     //Общие функции (применимы ко всем Panes)
     public void showMessage(String msg) {
@@ -452,17 +433,15 @@ public class MainsceneController implements Initializable {
         ChoosePhase5Pane.setVisible(false);
         OrganisationPane.setVisible(false);
         ProductsPane.setVisible(false);
-        SavedSamplesPane.setVisible(false);
         PropertiesPane.setVisible(false);
         // Андизейблим все кнопки
         ChooseProviderBtn.setDisable(false);
         OrganisationBtn.setDisable(false);
         ProvidersBtn.setDisable(false);
         ProductsBtn.setDisable(false);
-        SavedSamplesBtn.setDisable(false);
         PropertiesBtn.setDisable(false);
         ConnectionBtn.setDisable(false);
-        // Выведем нужную форму и заблокируем нужную форму
+        // Выведем нужную форму и заблокируем нужную кнопку
         panetoshow.setVisible(true);
         btntoshow.setDisable(true);
     }
@@ -480,14 +459,12 @@ public class MainsceneController implements Initializable {
         ChoosePhase5Pane.setVisible(false);
         OrganisationPane.setVisible(false);
         ProductsPane.setVisible(false);
-        SavedSamplesPane.setVisible(false);
         PropertiesPane.setVisible(false);
         // дизейблим все кнопки
         ChooseProviderBtn.setDisable(true);
         OrganisationBtn.setDisable(true);
         ProvidersBtn.setDisable(true);
         ProductsBtn.setDisable(true);
-        SavedSamplesBtn.setDisable(true);
         PropertiesBtn.setDisable(true);
         ConnectionBtn.setDisable(true);
         // настраиваем функционал в Connection Pane для подключения
@@ -559,6 +536,16 @@ public class MainsceneController implements Initializable {
                 Phase4OtherWayTable.getSelectionModel().clearSelection();
                 Phase4GetForwardBtn.setDisable(true);
                 break;
+            case "PropertiesPane":
+                PropertiesCriteriaTable.getSelectionModel().clearSelection();
+                PropertiesAdjustmentTable.getSelectionModel().clearSelection();
+                PropertiesAdjustmentDangerLevelEdit.setText("");
+                PropertiesAdjustmentSpeedEdit.getItems().setAll();
+                PropertiesCriteriaNameEdit.setText("");
+                PropertiesCriteriaImportanceEdit.setText("");
+                PropertiesSaveAdjustmentBtn.setDisable(true);
+                PropertiesSaveCriteriaBtn.setDisable(true);
+                break;
         }
     }
     private void Phase4Log(String s) {
@@ -623,6 +610,11 @@ public class MainsceneController implements Initializable {
         EditProviderCriteriaValueColumn.setCellValueFactory(new PropertyValueFactory("value"));
         EditProviderProductNameColumn.setCellValueFactory(new PropertyValueFactory("product"));
         EditProviderProductProvidesColumn.setCellValueFactory(new PropertyValueFactory("isprovide"));
+        //Страница настроек
+        PropertiesAdjustmentSpeedColumn.setCellValueFactory(new PropertyValueFactory("percentagespeed"));
+        PropertiesAdjustmentValueColumn.setCellValueFactory(new PropertyValueFactory("dangerlevel"));
+        PropertiesCriteriaNameColumn.setCellValueFactory(new PropertyValueFactory("title"));
+        PropertiesCriteriaImportanceColumn.setCellValueFactory(new PropertyValueFactory("importance"));
         // Страница удаления поставщика
         DeleteProviderIndexColumn.setCellValueFactory(new PropertyValueFactory("index"));
         DeleteProviderRegionColumn.setCellValueFactory(new PropertyValueFactory("region"));
@@ -1137,25 +1129,71 @@ public class MainsceneController implements Initializable {
     // Функции Properties Pane =============================
     @FXML
     private void showProperties(ActionEvent event) {
+        PropertiesCriteriaTable.setItems(dataaccessor.getAllCriteries());
+        PropertiesAdjustmentTable.setItems(dataaccessor.getAllAdjustment());
         showPane(PropertiesPane,PropertiesBtn);
     }
     @FXML
-    private void PropertiesSavePreferences(ActionEvent event) {
-    }
-    @FXML
     private void PropertiesSelectAdjustment(MouseEvent event) {
+        Adjustment adj=PropertiesAdjustmentTable.getSelectionModel().getSelectedItem();
+        if (adj!=null) {
+            PropertiesAdjustmentDangerLevelEdit.setText(String.valueOf(adj.getDangerlevel()));
+            ObservableList<Integer> speedval = FXCollections.observableArrayList();
+            speedval.add(1);
+            int sv=5;
+            while (sv<=100) {
+                speedval.add(sv);
+                sv+=5;
+            }
+            PropertiesAdjustmentSpeedEdit.setItems(speedval);
+            PropertiesAdjustmentSpeedEdit.setValue(adj.getPercentagespeed());
+            PropertiesSaveAdjustmentBtn.setDisable(false);
+        }
     }
     @FXML
     private void PropertiesSaveAdjustment(ActionEvent event) {
+        Adjustment adj=PropertiesAdjustmentTable.getSelectionModel().getSelectedItem();
+        adj.setPercentageSpeed(PropertiesAdjustmentSpeedEdit.getValue());
+        dataaccessor.saveAdjustment(adj);
+        PropertiesAdjustmentTable.setItems(dataaccessor.getAllAdjustment());
     }
     @FXML
     private void PropertiesSaveCriteria(ActionEvent event) {
+        Criteria crit=PropertiesCriteriaTable.getSelectionModel().getSelectedItem();
+        int sumval=0;
+        String stringImportance=PropertiesCriteriaImportanceEdit.getText();
+        if (stringImportance.matches("[\\d]+")) {
+            for (Criteria c:PropertiesCriteriaTable.getItems()) {
+                if (crit.getId()!=c.getId()) {
+                    sumval+=c.getImportance();
+                }
+            }
+            sumval+=Integer.parseInt(stringImportance);
+            if (sumval==10||sumval<10) {
+                crit.setImportance(Integer.parseInt(stringImportance));
+                dataaccessor.saveCriteria(crit);
+                PropertiesCriteriaTable.setItems(dataaccessor.getAllCriteries());
+            }
+            else {
+                showMessage("Сумма важности критериев не может быть больше 10");
+            }
+        }
+        else {
+            showMessage("Неправильно задана важность критерия!");
+        }
     }
     @FXML
     private void PropertiesSelectCriteria(MouseEvent event) {
+        Criteria crit=PropertiesCriteriaTable.getSelectionModel().getSelectedItem();
+        if (crit!=null) {
+            PropertiesCriteriaNameEdit.setText(crit.getTitle());
+            PropertiesCriteriaImportanceEdit.setText(String.valueOf(crit.getImportance()));
+            PropertiesSaveCriteriaBtn.setDisable(false);
+        }
     }
     @FXML
     private void PropertiesClearSelection(MouseEvent event) {
+        clearSelection("PropertiesPane");
     }
     
     // Функции Choose Provider Pane =============================
@@ -1271,11 +1309,10 @@ public class MainsceneController implements Initializable {
         Phase4Log("===");
         Phase4Log("Список найденных путей:");
         for (Way way:unsortedways) {
-            Phase4Log("===");
+            Phase4Log("---");
             Phase4Log("Поставщик: "+way.getProvider().toString());
             Phase4Log("Адрес: "+way.getStartaddr().toString());
             Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
-            Phase4Log("===");
         }
         // Сортируем пути по максимальному времени
         ObservableList<Way> uncorrectedways = FXCollections.observableArrayList();
@@ -1284,40 +1321,62 @@ public class MainsceneController implements Initializable {
                 uncorrectedways.add(way);
             }
         }
+        Phase4Log("===");
         Phase4Log("Список сортированных по времемни путей:");
         for (Way way:uncorrectedways) {
-            Phase4Log("===");
+            Phase4Log("---");
             Phase4Log("Поставщик: "+way.getProvider().toString());
             Phase4Log("Адрес: "+way.getStartaddr().toString());
             Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
-            Phase4Log("===");
         }
         // Корректируем пути по погоде
-        ObservableList<Way> correctedways = dataaccessor.correctRoutes(uncorrectedways);
-        Phase4Log("Список сортированных по погоде путей:");
-        for (Way way:correctedways) {
-            Phase4Log("===");
-            Phase4Log("Поставщик: "+way.getProvider().toString());
-            Phase4Log("Адрес: "+way.getStartaddr().toString());
-            Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
-            Phase4Log("Средний балл опасности на дороге: "+way.getAvgdanger()+" , Погодные условия на пути: "+way.getWeatheronway());
-            Phase4Log("===");
-        }
-        // Сортируем по максимальному времени
+        ObservableList<Way> correctedways;
         ObservableList<Way> summaryways = FXCollections.observableArrayList();
-        for (Way way: correctedways) {
-            if(way.getCorrectedtime()<maxtime) {
-                summaryways.add(way);
+        if (Phase3WeatherCheck.isSelected()) {
+            correctedways = dataaccessor.correctRoutes(uncorrectedways);
+            Phase4Log("===");
+            Phase4Log("Список сортированных по погоде путей:");
+            for (Way way:correctedways) {
+                Phase4Log("---");
+                Phase4Log("Поставщик: "+way.getProvider().toString());
+                Phase4Log("Адрес: "+way.getStartaddr().toString());
+                Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getCorrectedtime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
+                Phase4Log("Средний балл опасности на дороге: "+way.getAvgdanger()+" , Погодные условия на пути: "+way.getWeatheronway());
+            }
+            // Сортируем по максимальному времени
+            for (Way way: correctedways) {
+                if(way.getCorrectedtime()<maxtime) {
+                    summaryways.add(way);
+                }
+            }
+            int commonDangerLevel=0;
+            int countWays=0;
+            Phase4Log("===");
+            Phase4Log("Список сортированных по времемни путей:");
+            for (Way way:summaryways) {
+                // Считаем общий рейтинг опасности на пути
+                commonDangerLevel+=way.getAvgdanger();
+                countWays++;
+                Phase4Log("---");
+                Phase4Log("Поставщик: "+way.getProvider().toString());
+                Phase4Log("Адрес: "+way.getStartaddr().toString());
+                Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getCorrectedtime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
+                Phase4Log("Средний балл опасности на дороге: "+way.getAvgdanger()+" , Погодные условия на пути: "+way.getWeatheronway());
+            }
+            int avgCommonDangerLevel=commonDangerLevel/countWays;
+            if ((importanceway+avgCommonDangerLevel-1)>9) {
+                importanceway=9;
+                importancerating=1;
+            }
+            else {
+                importanceway+=avgCommonDangerLevel-1;
+                importancerating=10-importanceway;
             }
         }
-        Phase4Log("Список сортированных по времемни путей:");
-        for (Way way:summaryways) {
-            Phase4Log("===");
-            Phase4Log("Поставщик: "+way.getProvider().toString());
-            Phase4Log("Адрес: "+way.getStartaddr().toString());
-            Phase4Log("Протяженность: "+way.getLength()+" км, Время в пути: "+way.getBasetime()+" ч, Средняя скорость: "+way.getAvgspeed()+" км/ч");
-            Phase4Log("Средний балл опасности на дороге: "+way.getAvgdanger()+" , Погодные условия на пути: "+way.getWeatheronway());
-            Phase4Log("===");
+        else {
+            for (Way w:uncorrectedways)
+                w.setCorrectedtime(w.getBasetime());
+            summaryways = uncorrectedways;
         }
         // Считаем общий рейтинг пути
         for (Way way:summaryways) {
@@ -1344,12 +1403,14 @@ public class MainsceneController implements Initializable {
                 }
             }
         }
+        Phase4Log("===");
         Phase4Log("Лучший путь:");
         Phase4Log("Поставщик: "+bestratingway.getProvider().toString());
         Phase4Log("Адрес: "+bestratingway.getStartaddr().toString());
         Phase4Log("Протяженность: "+bestratingway.getLength()+" км, Время в пути: "+bestratingway.getBasetime()+" ч, Средняя скорость: "+bestratingway.getAvgspeed()+" км/ч");
         Phase4Log("Средний балл опасности на дороге: "+bestratingway.getAvgdanger()+" , Погодные условия на пути: "+bestratingway.getWeatheronway());
         Phase4Log("Общий рейтинг пути:"+bestratingway.getSummaryrating());
+        Phase4Log("Коэффициент пути:"+importanceway+" Коэффициент поставщика:"+importancerating);
         ObservableList<Way> bestway = FXCollections.observableArrayList();
         bestway.add(bestratingway);
         // Формируем список остальных путей без данного пути
@@ -1363,7 +1424,7 @@ public class MainsceneController implements Initializable {
     
     @FXML
     private void Phase3showTimeInformation(ActionEvent event) {
-        showMessage("На данный момент прогноз поддерживается только до 6 дней"
+        showMessage("На данный момент прогноз поддерживается только до 7 дней"
                 + "\n Если указать больше 6 дней, прогноз свыше 6 дней учитываться не будет!");
     }
     @FXML
@@ -1419,11 +1480,6 @@ public class MainsceneController implements Initializable {
         }
         else {Phase4GetForwardBtn.setDisable(true);}
     }
-     @FXML
-    private void Phase4SaveToSamples(ActionEvent event) {
-        Phase4SaveToSamplesBtn.setText("Выборка сохранена");
-        Phase4SaveToSamplesBtn.setDisable(true);
-    }
 
     @FXML
     private void Phase4ClearSelection(MouseEvent event) {
@@ -1438,22 +1494,29 @@ public class MainsceneController implements Initializable {
 
     @FXML
     private void Phase5GetGPXFile(ActionEvent event) {
-    }
-
-    // Функции SavedSamples Pane =============================
-    @FXML
-    private void showSavedSamples(ActionEvent event) {
-        showPane(SavedSamplesPane, SavedSamplesBtn);
-    }
-
-   
-
-
-
-
-
-
-
-
-    
+        List<String> lines = new ArrayList();
+        lines.add("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        lines.add("<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\" version=\"1.1\">");
+        lines.add("<metadata>");
+        lines.add("<name></name>");
+        lines.add("<copyright author=\"BF PSTU\">");
+        lines.add("<license></license>");
+        lines.add("</copyright>");
+        lines.add("</metadata>");
+        lines.add("<trk>");
+        lines.add("<trkseg>");
+        for (String waycords:selectedway.getShape()) {
+            String[] cords = waycords.split(",");
+            lines.add("<trkpt lat=\""+cords[0]+"\" lon=\""+cords[1]+"\"/>");
+        }
+        lines.add("</trkseg>");
+        lines.add("</trk>");
+        lines.add("</gpx>");
+        Path file = Paths.get("newgpxfile.gpx");
+        try {
+            Files.write(file, lines, StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            showMessage(ex.toString());
+        }
+    }  
 }
